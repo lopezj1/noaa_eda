@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: noaa_mrip
+    database: noaa_db
+    schema: main
+    tables:
+      - name: catch
+      - name: size
+      - name: trip

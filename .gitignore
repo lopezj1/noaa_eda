@@ -1,0 +1,6 @@
+/duckdb
+/dbt/logs
+/dbt/noaa_data/target
+/dbt/noaa_data/dbt_packages
+/dbt/noaa_data/logs
+.vscode

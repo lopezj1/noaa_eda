@@ -1,0 +1,12 @@
+
+version: 2
+
+models:
+  - name: stg_noaa_mrip__catch
+    description: "Copy catch data from source"
+    columns:
+      - name: catch_id
+        description: "The primary key for this table"
+        tests:
+          - unique
+          - not_null

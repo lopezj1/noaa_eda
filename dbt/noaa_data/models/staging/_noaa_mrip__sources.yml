@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: noaa_mrip
     database: noaa_db
-    schema: main
+    schema: raw
     tables:
       - name: catch
       - name: size

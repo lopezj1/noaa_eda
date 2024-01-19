@@ -1,8 +1,3 @@
-# %% To-Do
-# inspect tables
-# column names
-# populate README
-
 # %%
 import duckdb
 import requests
@@ -15,7 +10,7 @@ from zipfile import ZipFile, is_zipfile
 import os, shutil
 
 # %% remove shape from value
-pl.Config.set_tbl_hide_dataframe_shape(True)
+pl.Config.set_tbl_hide_dataframe_shape(False)
 
 
 # %%
@@ -99,32 +94,45 @@ def get_dataset_size(dataset: str) -> None:
     return
 
 
-def run_query(query: str, materialization):
+def run_query(query: str, materialization: str = "in-memory"):
     """Run query and materialize results"""
+
+    print('query: ' + query)
+    print('materialization: ' + materialization)
+
     with duckdb.connect("../duckdb/noaa_dw.duckdb") as con:
         if materialization == "in-memory":
-            return con.sql(query).show()  # run in-memory
+            con.sql(query).show()  # run in-memory
+            return
+        elif materialization == "persist":
+            con.sql(query)  # persist in db
+            return
         elif materialization == "pandas":
-            return con.sql(query).df()  # pandas dataframe
+            pandas_df = con.sql(query).df()  # pandas dataframe
+            print(pandas_df.head())
+            return pandas_df
         elif materialization == "polars":
-            return con.sql(query).pl()  # polars dataframe
+            polars_df = con.sql(query).pl()  # polars dataframe
+            print(polars_df.head())
+            return polars_df
 
 
 def create_table(
-    dataset: str, df: pl.DataFrame, materialization: str = "in-memory"
+    dataset: str, materialization: str = "in-memory"
 ) -> None:
     """Creates table in raw schema for a particular dataset"""
+    
     query = f"""
             CREATE SCHEMA IF NOT EXISTS raw;
             USE noaa_dw.raw;
             CREATE OR REPLACE TABLE {dataset} AS
-            SELECT * FROM {df};
+            SELECT * FROM '{dataset}_df'; 
             """
     run_query(query, materialization)
     return
 
 
-def parse_csv_query(dataset: str, materialization: str = "in-memory") -> None:
+def parse_csv(dataset: str, materialization: str = "in-memory"):
     """Print out the file size of all csv files with matching
     dataset and create query for reading that dataset"""
 
@@ -140,8 +148,13 @@ def parse_csv_query(dataset: str, materialization: str = "in-memory") -> None:
             all_varchar = true
             )
             """
-    run_query(query, materialization)
-    return
+    
+    if materialization == 'polars' or materialization == 'pandas':
+        df = run_query(query, materialization)
+        return df
+    else:
+        run_query(query, materialization)
+        return
 
 
 def get_table_columns(dataset: str, materialization: str = "in-memory") -> None:
@@ -197,35 +210,41 @@ extract_noaa(base_url)
 
 # %%
 materialization = "polars"
-catch_df = run_query(parse_csv_query("catch"), materialization)
-size_df = run_query(parse_csv_query("size"), materialization)
-trip_df = run_query(parse_csv_query("trip"), materialization)
+catch_df = parse_csv("catch", materialization)
+size_df = parse_csv("size", materialization)
+trip_df = parse_csv("trip", materialization)
 
 # %% Inspect dataframes
 inspect_df(catch_df)
 inspect_df(size_df)
 inspect_df(trip_df)
 
+# %% Preprocess dataframes
+#drop columns that contain all null values
+#cast column types
+#check for NaNs
+#deduplicate
+catch_df = catch_df.select(pl.all().is_not_null())
+catch_df = catch_df.select(pl.all().is_nan().all().is_not()) #all values in dataframe set to varchar so this doesn't work
+
 # %% Drop columns containing high null count (using threshold of 200)
 catch_df = drop_null_cols(
     catch_df
-)  # might be able to eliminate this function see next line
-catch_df = catch_df.filter(pl.all().is_not_null())
-catch_df = catch_df.filter(pl.all().is_not_nan())
-
-# %% Preprocess dataframes
-
+)
 # %% Create table in db for each dataframe
-create_table("catch", catch_df)
-create_table("size", size_df)
-create_table("trip", trip_df)
+materialization = "persist"
+create_table("catch", materialization)
+create_table("size", materialization)
+create_table("trip", materialization)
 
 # %% Check table info in db
 run_query("SELECT * FROM INFORMATION_SCHEMA.tables")
+run_query("SELECT * FROM noaa_dw.raw.catch")
 run_query("DESCRIBE noaa_dw.raw.catch")
 
 # %% Delete schema and all tables/views within
-run_query("DROP SCHEMA raw CASCADE")
+materialization = "persist"
+run_query("DROP SCHEMA raw CASCADE", materialization)
 
 # %% Delete tmp folder and contents to free up space on local machine
 delete_csvs("../tmp/")

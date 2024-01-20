@@ -210,6 +210,8 @@ extract_noaa(base_url)
 
 # %%
 materialization = "polars"
+
+#figure out how to dynamically name dataframes using dataset they reference
 catch_df = parse_csv("catch", materialization)
 size_df = parse_csv("size", materialization)
 trip_df = parse_csv("trip", materialization)

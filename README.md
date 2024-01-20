@@ -6,6 +6,8 @@
   - [Introduction](#introduction)
   - [Approach](#approach)
     - [Extract \& Load (EL)](#extract--load-el)
+      - [Data Size \& Processing Time Table](#data-size--processing-time-table)
+        - [*Times are averaged over 3 iterations*](#times-are-averaged-over-3-iterations)
     - [Transform (T)](#transform-t)
     - [Exploratory Data Analysis (EDA)](#exploratory-data-analysis-eda)
     - [Web Application](#web-application)
@@ -41,10 +43,18 @@ Survey data, in the form of csv files, is contained in zip folders by year and w
 5. Materialize DuckDB query into either **polars** or **pandas** dataframe
    - Evaluate performance between **polars** and **pandas**
 6. Perform data cleaning on dataframes such as removing null values, deduplication, etc.
-7. Write dataframes to tables in a persistent **DuckDB** schema named **raw**
-   - **Catch table - Size = , rows**
-   - **Size table - Size = , rows**
-   - **Trip table - Size = , rows**
+7. Write dataframes to tables (1-to-1 relationship) in a persistent **DuckDB** schema named **raw**
+
+#### Data Size & Processing Time Table
+---
+| Dataset | Size (GB) | Size (Rows) | DuckDB Query Time (sec) | Polars Conversion Time (s)  | Polars Pre-process Time (s) | Pandas Conversion Time (sec) | Pandas Pre-process Time (sec) 
+| ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | 
+| Catch | 1.08 | 5,654,240 | ~25 | ~58 | | ~194 | 
+| Size | 1.07 | 7,143,915 | ~20 | ~49 | | ~141 |  
+| Trip | 1.04 | 3,638,647 | ~40 | ~88 | | ~228 |
+##### *Times are averaged over 3 iterations*
+
+The table above highlights the performance of reading the csv files into different data structures.  Storing into a **DuckDB** relation is most optimal.  However, pre-processing needs to be performed which is better handled in **Pandas** or **Polars**.  **Polars** is the more efficient preprocessing tool when it comes to converting the **DuckDB** relation into a dataframe and preprocessing that dataframe.
 
 ### Transform (T)
 After loading the source data into **DuckDB**, data models will be created to transform the raw data to feature rich data in a separate schema named **analytics** using **dbt**.  Tests and documentation will be created for the dbt project.

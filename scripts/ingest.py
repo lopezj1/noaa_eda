@@ -95,8 +95,8 @@ def convert_query_results(
         elif materialization == "polars":
             df = con.sql("SELECT * FROM relation").pl()
     t1 = time.time()
-    total_time = t1 - t0
-    print(f'Dataframe conversion for {materialization} was {total_time} seconds')
+    total_time = round(t1 - t0, 2)
+    print(f'Dataframe ({materialization}) conversion time: {total_time} seconds')
     return df
 
 
@@ -109,10 +109,14 @@ def get_query_results(
     print("materialization: " + materialization)
 
     with duckdb.connect("../duckdb/noaa_dw.duckdb") as con:
+        t0 = time.time()
         if materialization == "persist":
             con.sql(query) #execute query
         else:
             r = con.sql(query) #store query results in relation
+        t1 = time.time()
+        total_time = round(t1 - t0, 2)
+        print(f'DuckDB query time: {total_time} seconds')
 
         if materialization == "pandas" or materialization == "polars":
             df = convert_query_results(r, materialization)
@@ -172,6 +176,12 @@ extract_noaa(base_url)
 
 # %% figure out how to dynamically name dataframes using dataset they reference
 materialization = "polars"
+catch_df = parse_csv("catch", materialization)
+size_df = parse_csv("size", materialization)
+trip_df = parse_csv("trip", materialization)
+
+# %% figure out how to dynamically name dataframes using dataset they reference
+materialization = "pandas"
 catch_df = parse_csv("catch", materialization)
 size_df = parse_csv("size", materialization)
 trip_df = parse_csv("trip", materialization)

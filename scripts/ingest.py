@@ -8,15 +8,13 @@ import polars.selectors as cs
 from io import BytesIO
 from zipfile import ZipFile, is_zipfile
 import os, shutil
-
-# %% remove shape from value
-pl.Config.set_tbl_hide_dataframe_shape(False)
+import time
 
 
 # %%
 def fetch_folders(base_url: str) -> list:
     """Get list of zip folders containing NOAA data"""
-
+    # add try/except block for requests
     html = requests.get(base_url).content
     df_list = pd.read_html(html)
     df = df_list[-1]
@@ -27,7 +25,7 @@ def fetch_folders(base_url: str) -> list:
 
 def unzip_folder(lszip: list) -> dict:
     """Unzip folder and return list of filenames and list of file content"""
-
+    # add try/except block for requests
     lsfilename = []
     lsfile = []
 
@@ -61,15 +59,11 @@ def write_csv(dictfile: dict) -> None:
         outfile.write(file)
         outfile.close()
 
-    return
-
 
 def delete_csvs(directory: str) -> None:
     """Remove tmp folder"""
 
     shutil.rmtree(f"{directory}")
-
-    return
 
 
 def extract_noaa(base_url: str) -> None:
@@ -78,8 +72,6 @@ def extract_noaa(base_url: str) -> None:
     lszip = fetch_folders(base_url)
     dictfile = unzip_folder(lszip)
     write_csv(dictfile)
-
-    return
 
 
 def get_dataset_size(dataset: str) -> None:
@@ -91,48 +83,58 @@ def get_dataset_size(dataset: str) -> None:
 
     print(f"{dataset} files size: " + str(round(dataset_size / (1024**3), 2)) + " GB")
 
-    return
+
+def convert_query_results(
+    relation: duckdb.DuckDBPyRelation, materialization: str
+) -> pd.DataFrame | pl.DataFrame:
+    """Convert relation to dataframe"""
+    t0 = time.time()
+    with duckdb.connect("../duckdb/noaa_dw.duckdb") as con:
+        if materialization == "pandas":
+            df = con.sql("SELECT * FROM relation").df()
+        elif materialization == "polars":
+            df = con.sql("SELECT * FROM relation").pl()
+    t1 = time.time()
+    total_time = t1 - t0
+    print(f'Dataframe conversion for {materialization} was {total_time} seconds')
+    return df
 
 
-def run_query(query: str, materialization: str = "in-memory"):
-    """Run query and materialize results"""
+def get_query_results(
+    query: str, materialization: str = "in-memory"
+) -> pd.DataFrame | pl.DataFrame | None:
+    """Run query and return a relation"""
 
-    print('query: ' + query)
-    print('materialization: ' + materialization)
+    print("query: " + query)
+    print("materialization: " + materialization)
 
     with duckdb.connect("../duckdb/noaa_dw.duckdb") as con:
-        if materialization == "in-memory":
-            con.sql(query).show()  # run in-memory
-            return
-        elif materialization == "persist":
-            con.sql(query)  # persist in db
-            return
-        elif materialization == "pandas":
-            pandas_df = con.sql(query).df()  # pandas dataframe
-            print(pandas_df.head())
-            return pandas_df
-        elif materialization == "polars":
-            polars_df = con.sql(query).pl()  # polars dataframe
-            print(polars_df.head())
-            return polars_df
+        if materialization == "persist":
+            con.sql(query) #execute query
+        else:
+            r = con.sql(query) #store query results in relation
+
+        if materialization == "pandas" or materialization == "polars":
+            df = convert_query_results(r, materialization)
+            return df
+        elif materialization == "in-memory":
+            con.sql("SELECT * FROM r").show()
 
 
-def create_table(
-    dataset: str, materialization: str = "in-memory"
-) -> None:
+def create_table(dataset: str, materialization: str = "in-memory") -> None:
     """Creates table in raw schema for a particular dataset"""
-    
+
     query = f"""
             CREATE SCHEMA IF NOT EXISTS raw;
             USE noaa_dw.raw;
             CREATE OR REPLACE TABLE {dataset} AS
             SELECT * FROM '{dataset}_df'; 
             """
-    run_query(query, materialization)
-    return
+
+    get_query_results(query, materialization)
 
 
-def parse_csv(dataset: str, materialization: str = "in-memory"):
+def parse_csv(dataset: str, materialization: str = "in-memory") -> pd.DataFrame | pl.DataFrame | None:
     """Print out the file size of all csv files with matching
     dataset and create query for reading that dataset"""
 
@@ -148,48 +150,8 @@ def parse_csv(dataset: str, materialization: str = "in-memory"):
             all_varchar = true
             )
             """
-    
-    if materialization == 'polars' or materialization == 'pandas':
-        df = run_query(query, materialization)
-        return df
-    else:
-        run_query(query, materialization)
-        return
 
-
-def get_table_columns(dataset: str, materialization: str = "in-memory") -> None:
-    """Create query for getting column names for a particular table"""
-    query = f"""
-            SELECT COLUMN_NAME 
-            FROM INFORMATION_SCHEMA.columns 
-            WHERE table_name = '{dataset}'
-            """
-    run_query(query, materialization)
-    return
-
-
-def inspect_df(df: pl.DataFrame) -> None:
-    print(df.glimpse())
-    print(df.describe())
-    print(df.null_count())
-
-    return
-
-
-def drop_null_cols(df: pl.DataFrame) -> pl.DataFrame:
-    dict_nulls = df.null_count().rows(named=True)[
-        0
-    ]  # get dictionary of column name as key and null counts as value
-    print(dict_nulls)
-
-    drop_cols = []  # instantiate list to hold columns to drop
-    for k, v in dict_nulls.items():
-        if v > 200:  # threshold of null values to drop on
-            drop_cols.append(k)
-
-    df = df.drop(drop_cols)
-
-    return df
+    return get_query_results(query, materialization)
 
 
 # %% make main function with init with url as materialization as parameter
@@ -204,35 +166,43 @@ extract_noaa(base_url)
 
 # for dataset in datasets:
 #     k = dataset
-#     v = run_query(parse_csv_query(dataset), materialization)
+#     v = get_query_results(parse_csv_query(dataset), materialization)
 
 #     dict_dfs[k] = v
 
-# %%
+# %% figure out how to dynamically name dataframes using dataset they reference
 materialization = "polars"
-
-#figure out how to dynamically name dataframes using dataset they reference
 catch_df = parse_csv("catch", materialization)
 size_df = parse_csv("size", materialization)
 trip_df = parse_csv("trip", materialization)
 
-# %% Inspect dataframes
-inspect_df(catch_df)
-inspect_df(size_df)
-inspect_df(trip_df)
-
 # %% Preprocess dataframes
-#drop columns that contain all null values
-#cast column types
-#check for NaNs
-#deduplicate
-catch_df = catch_df.select(pl.all().is_not_null())
-catch_df = catch_df.select(pl.all().is_nan().all().is_not()) #all values in dataframe set to varchar so this doesn't work
-
-# %% Drop columns containing high null count (using threshold of 200)
-catch_df = drop_null_cols(
-    catch_df
+# drop columns that contain all null values
+# cast column types
+# check for NaNs
+# deduplicate
+# make into function
+# time it for processing
+catch_df.columns  # get list of column names
+lazy_catch = catch_df.lazy()
+lazy_query = (
+            lazy_catch
+            .select(col.name for col in catch_df.null_count() / catch_df.height if col.item() <= 0.2)
+            .filter(~pl.all_horizontal(pl.all().is_null()))
 )
+print(lazy_query.explain())
+
+# drop columns % of null counts > 20% of total values
+catch_df.select(
+    col.name for col in catch_df.null_count() / catch_df.height if col.item() <= 0.2
+)
+
+# drop rows containing all nulls
+catch_df.filter(~pl.all_horizontal(pl.all().is_null()))
+
+# all values in dataframe set to varchar so this doesn't work, need to type cast first
+# catch_df.select(pl.all().is_nan().all().is_not())
+
 # %% Create table in db for each dataframe
 materialization = "persist"
 create_table("catch", materialization)
@@ -240,13 +210,13 @@ create_table("size", materialization)
 create_table("trip", materialization)
 
 # %% Check table info in db
-run_query("SELECT * FROM INFORMATION_SCHEMA.tables")
-run_query("SELECT * FROM noaa_dw.raw.catch")
-run_query("DESCRIBE noaa_dw.raw.catch")
+get_query_results("SELECT * FROM INFORMATION_SCHEMA.tables")
+get_query_results("SELECT * FROM noaa_dw.raw.catch")
+get_query_results("DESCRIBE noaa_dw.raw.catch")
 
 # %% Delete schema and all tables/views within
 materialization = "persist"
-run_query("DROP SCHEMA raw CASCADE", materialization)
+get_query_results("DROP SCHEMA raw CASCADE", materialization)
 
 # %% Delete tmp folder and contents to free up space on local machine
 delete_csvs("../tmp/")

@@ -47,7 +47,7 @@ Survey data, in the form of csv files, is contained in zip folders by year and w
 
 #### Data Size & Processing Time Table
 ---
-| Dataset | Size (GB) | Size (Rows) | DuckDB Query Time (sec) | Polars Conversion Time (s)  | Polars Pre-process Time (s) | Pandas Conversion Time (sec) | Pandas Pre-process Time (sec) 
+| Dataset | Size (GB) | Size (Row Count) | DuckDB Query Time (sec) | Polars Conversion Time (sec)  | Polars Pre-process Time (sec) | Pandas Conversion Time (sec) | Pandas Pre-process Time (sec) 
 | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- | 
 | Catch | 1.08 | 5,654,240 | ~25 | ~58 | | ~194 | 
 | Size | 1.07 | 7,143,915 | ~20 | ~49 | | ~141 |  

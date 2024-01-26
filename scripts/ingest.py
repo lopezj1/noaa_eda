@@ -10,7 +10,6 @@ from zipfile import ZipFile, is_zipfile
 import os, shutil
 import time
 
-
 # %%
 def fetch_folders(base_url: str) -> list:
     """Get list of zip folders containing NOAA data"""
@@ -22,8 +21,7 @@ def fetch_folders(base_url: str) -> list:
 
     return lszip
 
-
-def unzip_folder(lszip: list) -> dict:
+def unzip_folders(lszip: list) -> dict:
     """Unzip folder and return list of filenames and list of file content"""
     # add try/except block for requests
     lsfilename = []
@@ -45,34 +43,31 @@ def unzip_folder(lszip: list) -> dict:
 
     return dictfile
 
-
-def write_csv(dictfile: dict) -> None:
+def write_csvs(dictfile: dict) -> None:
     """Save csv files to tmp folder"""
     tmp_dir = "../tmp"
     Path(tmp_dir).mkdir(parents=True, exist_ok=True)
 
     for filename, file in dictfile.items():
-        folder = filename.split("_")[0]
+        # folder = filename.split("_")[0]
         trunc_fn = filename.split(".")[0]
         output_file = f"../tmp/{trunc_fn}.csv"
         outfile = open(output_file, "wb")
         outfile.write(file)
         outfile.close()
 
-
 def delete_csvs(directory: str) -> None:
     """Remove tmp folder"""
 
     shutil.rmtree(f"{directory}")
 
-
 def extract_noaa(base_url: str) -> None:
     """Unzip folders from noaa site and save to files to local tmp folder"""
-
+    print(f'Extracting and copying csv files from noaa website to local tmp folder')
+    
     lszip = fetch_folders(base_url)
-    dictfile = unzip_folder(lszip)
-    write_csv(dictfile)
-
+    dictfile = unzip_folders(lszip)
+    write_csvs(dictfile)
 
 def get_dataset_size(dataset: str) -> None:
     """Calculate the total size of the files in GB"""
@@ -83,67 +78,24 @@ def get_dataset_size(dataset: str) -> None:
 
     print(f"{dataset} files size: " + str(round(dataset_size / (1024**3), 2)) + " GB")
 
-
-def convert_query_results(
-    relation: duckdb.DuckDBPyRelation, materialization: str
-) -> pd.DataFrame | pl.DataFrame:
-    """Convert relation to dataframe"""
-    t0 = time.time()
-    with duckdb.connect("../duckdb/noaa_dw.duckdb") as con:
-        if materialization == "pandas":
-            df = con.sql("SELECT * FROM relation").df()
-        elif materialization == "polars":
-            df = con.sql("SELECT * FROM relation").pl()
-    t1 = time.time()
-    total_time = round(t1 - t0, 2)
-    print(f'Dataframe ({materialization}) conversion time: {total_time} seconds')
-    return df
-
-
-def get_query_results(
-    query: str, materialization: str = "in-memory"
-) -> pd.DataFrame | pl.DataFrame | None:
-    """Run query and return a relation"""
-
-    print("query: " + query)
-    print("materialization: " + materialization)
-
-    with duckdb.connect("../duckdb/noaa_dw.duckdb") as con:
-        t0 = time.time()
-        if materialization == "persist":
-            con.sql(query) #execute query
-        else:
-            r = con.sql(query) #store query results in relation
-        t1 = time.time()
-        total_time = round(t1 - t0, 2)
-        print(f'DuckDB query time: {total_time} seconds')
-
-        if materialization == "pandas" or materialization == "polars":
-            df = convert_query_results(r, materialization)
-            return df
-        elif materialization == "in-memory":
-            con.sql("SELECT * FROM r").show()
-
-
-def create_table(dataset: str, materialization: str = "in-memory") -> None:
+def create_table_db(dataset: str, df_type: str) -> None:
     """Creates table in raw schema for a particular dataset"""
 
-    query = f"""
+    query_string = f"""
             CREATE SCHEMA IF NOT EXISTS raw;
             USE noaa_dw.raw;
             CREATE OR REPLACE TABLE {dataset} AS
-            SELECT * FROM '{dataset}_df'; 
+            SELECT * FROM '{dataset}_{df_type}_df'; 
             """
 
-    get_query_results(query, materialization)
+    duckdb_execute(con, query_string)
 
-
-def parse_csv(dataset: str, materialization: str = "in-memory") -> pd.DataFrame | pl.DataFrame | None:
+def parse_csv(dataset: str) -> str:
     """Print out the file size of all csv files with matching
     dataset and create query for reading that dataset"""
 
     get_dataset_size(f"{dataset}")
-    query = f"""
+    query_string = f"""
             SELECT * FROM read_csv('../tmp/{dataset}_*.csv',
             normalize_names = true,
             ignore_errors = false,
@@ -155,78 +107,124 @@ def parse_csv(dataset: str, materialization: str = "in-memory") -> pd.DataFrame 
             )
             """
 
-    return get_query_results(query, materialization)
+    return query_string
 
+def duckdb_execute(con: duckdb.DuckDBPyConnection, query_string: str) -> None:
+    print(f'Executing duckdb query: \n{query_string}\n')
 
-# %% make main function with init with url as materialization as parameter
-# %% extract data from http zip folder
-base_url = "https://www.st.nmfs.noaa.gov/st1/recreational/MRIP_Survey_Data/CSV/"
-extract_noaa(base_url)
+    """Execute query in duckdb"""
+    t0 = time.time()
+    con.execute(query_string) 
+    t1 = time.time()
+    total_time = round(t1 - t0, 2) 
+    print(f'DuckDB query execution time: {total_time} seconds\n')
 
-# %% read csv files into polars dataframe based on dataset type
-# datasets = ['catch', 'size', 'trip']
-# materialization = 'polars'
-# dict_dfs = {}
+def duckdb_relation(con: duckdb.DuckDBPyConnection, dataset: str) -> duckdb.DuckDBPyRelation:
+    """Create duckdb relation"""
+    print(f'Creating duckdb relation for {dataset} dataset\n')
 
-# for dataset in datasets:
-#     k = dataset
-#     v = get_query_results(parse_csv_query(dataset), materialization)
+    query_string = parse_csv(dataset)
 
-#     dict_dfs[k] = v
+    t0 = time.time()
+    relation = con.sql(query_string)
+    t1 = time.time()
+    total_time = round(t1 - t0, 2) 
+    print(f'DuckDB relation build time: {total_time} seconds\n')    
+    
+    return relation
 
-# %% figure out how to dynamically name dataframes using dataset they reference
-materialization = "polars"
-catch_df = parse_csv("catch", materialization)
-size_df = parse_csv("size", materialization)
-trip_df = parse_csv("trip", materialization)
+def create_pandas_df(con: duckdb.DuckDBPyConnection, dataset: str, chunk: bool = True) -> pd.DataFrame:
+    """Parse csv files into pandas dataframe"""
+    print(f'Creating pandas dataframe for {dataset} dataset\n')
+    
+    query_string = parse_csv(dataset)
 
-# %% figure out how to dynamically name dataframes using dataset they reference
-materialization = "pandas"
-catch_df = parse_csv("catch", materialization)
-size_df = parse_csv("size", materialization)
-trip_df = parse_csv("trip", materialization)
+    t0 = time.time()
+    if chunk == True:
+        df = con.execute(query_string).fetch_df_chunk()
+    elif chunk == False:
+        df = con.execute(query_string).df()
+    t1 = time.time()
+    total_time = round(t1 - t0, 2) 
+    print(f'Dataframe (pandas) conversion time: {total_time} seconds\n')
 
-# %% Preprocess dataframes
-# drop columns that contain all null values
+    return df
+
+def create_polars_df(con: duckdb.DuckDBPyConnection, dataset: str) -> pl.DataFrame:
+    """Parse csv files into polars dataframe"""
+    print(f'Creating polars dataframe for {dataset} dataset\n')
+
+    query_string = parse_csv(dataset)
+
+    t0 = time.time()
+    df = con.execute(query_string).pl()
+    t1 = time.time()
+    total_time = round(t1 - t0, 2) 
+    print(f'Dataframe (polars) conversion time: {total_time} seconds\n')
+
+    return df
+
+# %% 
+# def ingest_noaa():
+# """Extract and load csv files from noaa site into 
+#     3 tables: catch, size, trip into schema named RAW
+#     in duckdb database named noaa_data"""
+base_url = "https://www.st.nmfs.noaa.gov/st1/recreational/MRIP_Survey_Data/CSV/" 
+extract_noaa(base_url) #extract data from http zip folder
+
+#%%
+with duckdb.connect("../duckdb/noaa_dw.duckdb") as con:
+    #duckdb relation
+    catch_relation = duckdb_relation(con, "catch")
+    catch_relation = duckdb_relation(con, "size")
+    catch_relation = duckdb_relation(con, "trip")
+
+    #pandas dataframes
+    catch_pandas_df = create_pandas_df(con, "catch")
+    size_pandas_df = create_pandas_df(con, "size")
+    trip_pandas_df = create_pandas_df(con, "trip")
+
+    #polars dataframes
+    catch_polars_df = create_polars_df(con, "catch")
+    size_polars_df = create_polars_df(con, "size")
+    trip_polars_df = create_polars_df(con, "trip")
+
+# %% Preprocess dataframes - make into function
+# make 3 functions for preprocessing: relation, pandas, polars
+# drop columns % of null counts > 20% of total values
 # cast column types
 # check for NaNs
 # deduplicate
-# make into function
 # time it for processing
-catch_df.columns  # get list of column names
-lazy_catch = catch_df.lazy()
+catch_polars_df.columns  # get list of column names
+lazy_catch = catch_polars_df.lazy()
 lazy_query = (
             lazy_catch
-            .select(col.name for col in catch_df.null_count() / catch_df.height if col.item() <= 0.2)
+            .select(col.name for col in catch_polars_df.null_count() / catch_polars_df.height if col.item() <= 0.2)
             .filter(~pl.all_horizontal(pl.all().is_null()))
 )
 print(lazy_query.explain())
-
-# drop columns % of null counts > 20% of total values
-catch_df.select(
-    col.name for col in catch_df.null_count() / catch_df.height if col.item() <= 0.2
-)
-
-# drop rows containing all nulls
-catch_df.filter(~pl.all_horizontal(pl.all().is_null()))
 
 # all values in dataframe set to varchar so this doesn't work, need to type cast first
 # catch_df.select(pl.all().is_nan().all().is_not())
 
 # %% Create table in db for each dataframe
-materialization = "persist"
-create_table("catch", materialization)
-create_table("size", materialization)
-create_table("trip", materialization)
+df_type = "polars"
+create_table_db("catch", df_type)
+create_table_db("size", df_type)
+create_table_db("trip", df_type)
 
 # %% Check table info in db
-get_query_results("SELECT * FROM INFORMATION_SCHEMA.tables")
-get_query_results("SELECT * FROM noaa_dw.raw.catch")
-get_query_results("DESCRIBE noaa_dw.raw.catch")
+duckdb_execute("SELECT * FROM INFORMATION_SCHEMA.tables")
+duckdb_execute("SELECT * FROM noaa_dw.raw.catch")
+duckdb_execute("DESCRIBE noaa_dw.raw.catch")
 
 # %% Delete schema and all tables/views within
-materialization = "persist"
-get_query_results("DROP SCHEMA raw CASCADE", materialization)
+# make this a function, but don't call it in this script
+duckdb_execute("DROP SCHEMA raw CASCADE")
 
 # %% Delete tmp folder and contents to free up space on local machine
 delete_csvs("../tmp/")
+
+# if __name__ == "__main__":
+#     ingest_noaa()

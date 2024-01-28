@@ -1,51 +1,47 @@
+import glob
 import pandas as pd
 import polars as pl
 import duckdb
 import time
 from pathlib import Path
-from noaa_utils import parse_csv_query
 
-def create_pandas_df(con: duckdb.DuckDBPyConnection, dataset: str, directory: Path, chunk: bool = True) -> pd.DataFrame:
+def get_csv_files_by_dataset(dataset: str, directory: Path) -> list:
+    """Get list of csv files that describe a particular dataset: catch, size, trip"""
+    csv_files = list(directory.glob(f"**/{dataset}_*.csv"))
+
+    return csv_files
+
+def create_pandas_df(dataset: str, directory: Path) -> pd.DataFrame:
     """Parse csv files into pandas dataframe"""
     print(f'Creating pandas dataframe for {dataset} dataset\n')
     
-    query_string = parse_csv_query(dataset, directory)
-
     t0 = time.time()
-    if chunk == True:
-        df = con.execute(query_string).fetch_df_chunk(5)
-    elif chunk == False:
-        df = con.execute(query_string).df()
+    csv_files = get_csv_files_by_dataset(dataset, directory)
+    df_list = [pd.read_csv(file) for file in csv_files] #create list of dataframes - 1 for each file
+    df = pd.concat(df_list, ignore_index=True) #concat all dataframes in list into 1 dataframe
     t1 = time.time()
     total_time = round(t1 - t0, 2) 
-    print(f'Dataframe (pandas) conversion time: {total_time} seconds\n')
+    print(f'Dataframe (pandas) creation time: {total_time} seconds\n')
+
+    return df
+
+def create_polars_df(dataset: str, directory: Path) -> pl.DataFrame:
+    """Parse csv files into polars dataframe"""
+    print(f'Creating polars dataframe for {dataset} dataset\n')
+
+    t0 = time.time()
+    csv_files = get_csv_files_by_dataset(dataset, directory)
+    df_list = [pl.read_csv(file, ignore_errors=True) for file in csv_files] #create list of dataframes - 1 for each file
+    df = pl.concat(df_list, how="diagonal_relaxed") #concat all dataframes in list into 1 dataframe
+    t1 = time.time()
+    total_time = round(t1 - t0, 2) 
+    print(f'Dataframe (polars) creation time: {total_time} seconds\n')
 
     return df
 
 def clean_pandas_df(df: pd.DataFrame) -> pd.DataFrame:
     """Clean up dataframe to prep for loading into warehouse"""
     return
-
-def csv_to_pandas(dataset: str, db: str, chunk: bool = True) -> pd.DataFrame:
-    with duckdb.connect(db) as con:
-        """process csv files in pandas dataframe"""
-        df = create_pandas_df(con, dataset, chunk)
-
-        return df
-
-def create_polars_df(con: duckdb.DuckDBPyConnection, dataset: str, directory: Path) -> pl.DataFrame:
-    """Parse csv files into polars dataframe"""
-    print(f'Creating polars dataframe for {dataset} dataset\n')
-
-    query_string = parse_csv_query(dataset, directory)
-
-    t0 = time.time()
-    df = con.execute(query_string).pl()
-    t1 = time.time()
-    total_time = round(t1 - t0, 2) 
-    print(f'Dataframe (polars) conversion time: {total_time} seconds\n')
-
-    return df
 
 def clean_polars_df(df: pl.DataFrame) -> pl.DataFrame:
     """Clean up dataframe to prep for loading into warehouse"""
@@ -67,9 +63,18 @@ def clean_polars_df(df: pl.DataFrame) -> pl.DataFrame:
 
     return df
 
-def csv_to_polars(dataset: str, db: str) -> pl.DataFrame:
+def csv_to_pandas_df(dataset: str, db: str, chunk: bool = True) -> pd.DataFrame:
+    with duckdb.connect(db) as con:
+        """process csv files in pandas dataframe"""
+        df = create_pandas_df(con, dataset, chunk)
+        df = clean_pandas_df(df)
+
+        return df
+
+def csv_to_polars_df(dataset: str, db: str) -> pl.DataFrame:
     with duckdb.connect(db) as con:
         """process csv files in polars dataframe"""
         df = create_polars_df(con, dataset)
         df = clean_polars_df(df)
+
         return df

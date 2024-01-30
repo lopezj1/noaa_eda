@@ -2,13 +2,16 @@ import pandas as pd
 import polars as pl
 import numpy as np
 from pathlib import Path
+from prefect import flow, task
 
+@task()
 def get_csv_files_by_dataset(dataset: str, directory: Path) -> list:
     """Get list of csv files that describe a particular dataset: catch, size, trip"""
     csv_files = list(directory.glob(f"**/{dataset}_*.csv"))
 
     return csv_files
 
+@flow(log_prints=True)
 def create_pandas_df(dataset: str, directory: Path) -> pd.DataFrame:
     """Parse csv files into pandas dataframe"""
     print(f'\nCreating pandas dataframe for {dataset} dataset\n')
@@ -22,6 +25,7 @@ def create_pandas_df(dataset: str, directory: Path) -> pd.DataFrame:
 
     return df
 
+@flow(log_prints=True)
 def create_polars_df(dataset: str, directory: Path) -> pl.DataFrame:
     """Parse csv files into polars dataframe"""
     print(f'\nCreating polars dataframe for {dataset} dataset\n')
@@ -35,6 +39,7 @@ def create_polars_df(dataset: str, directory: Path) -> pl.DataFrame:
 
     return df
 
+@task()
 def clean_pandas_df(df: pd.DataFrame) -> pd.DataFrame:
     """Clean up pandas dataframe to prep for loading into warehouse"""
     threshold = df.shape[0] * 0.99 #set NaN value threshold to 99% of values
@@ -45,6 +50,7 @@ def clean_pandas_df(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+@task()
 def clean_polars_df(df: pl.DataFrame) -> pl.DataFrame:
     """Clean up polars dataframe to prep for loading into warehouse"""
     lf = df.lazy()
@@ -61,14 +67,16 @@ def clean_polars_df(df: pl.DataFrame) -> pl.DataFrame:
 
     return df
 
-def csv_to_pandas_df(dataset: str, directory: str) -> pd.DataFrame:
+@flow(log_prints=True)
+def csv_to_pandas_df(dataset: str, directory: Path) -> pd.DataFrame:
     """process csv files in pandas dataframe"""
     df = create_pandas_df(dataset, directory)
     df = clean_pandas_df(df)
 
     return df
 
-def csv_to_polars_df(dataset: str, directory: str) -> pl.DataFrame:
+@flow(log_prints=True)
+def csv_to_polars_df(dataset: str, directory: Path) -> pl.DataFrame:
     """process csv files in polars dataframe"""
     df = create_polars_df(dataset, directory)
     df = clean_polars_df(df)

@@ -1,10 +1,13 @@
+import datetime
 from pathlib import Path
 import requests
 import pandas as pd
 from io import BytesIO
 from zipfile import ZipFile, is_zipfile
 import shutil
+from prefect import flow, task
 
+@task()
 def fetch_noaa_zip_folders(base_url: str) -> list:
     """Get list of zip folders containing NOAA data"""
     try:
@@ -18,6 +21,7 @@ def fetch_noaa_zip_folders(base_url: str) -> list:
 
     return lszip
 
+@task()
 def unzip_noaa_folders(lszip: list, base_url: str) -> dict:
     """Unzip folder and return list of filenames and list of file content"""
     lsfilename = []
@@ -42,6 +46,7 @@ def unzip_noaa_folders(lszip: list, base_url: str) -> dict:
 
     return dictfile
 
+@task()
 def save_csv_files(dictfile: dict, directory: Path) -> None:
     """Save csv files to tmp folder"""
     directory.mkdir(parents=True, exist_ok=True)
@@ -56,6 +61,7 @@ def save_csv_files(dictfile: dict, directory: Path) -> None:
         except Exception as e:
             print(f"Error writing CSV file {output_file}: {e}")
 
+@task()
 def delete_csv_files(directory: Path) -> None:
     """Remove tmp folder"""
     try:
@@ -63,6 +69,7 @@ def delete_csv_files(directory: Path) -> None:
     except Exception as e:
         print(f"Error removing directory {directory}: {e}")
 
+@task()
 def get_dataset_size(dataset: str, directory: Path) -> None:
     """Calculate the total size of the files in GB"""
     dataset_size = 0
@@ -76,11 +83,16 @@ def get_dataset_size(dataset: str, directory: Path) -> None:
 
     print(f"{dataset} files size: " + str(round(dataset_size / (1024**3), 2)) + " GB")
 
-def extract_noaa_data(base_url: str, directory: Path) -> None:
+@flow(log_prints=True)
+def extract_noaa_data(base_url: str, directory: Path, start_year: int, end_year: int) -> None:
     """Unzip folders from noaa site and save to files to local tmp folder"""
     print(f'Extracting and copying csv files from noaa website to local tmp folder')
     
     lszip = fetch_noaa_zip_folders(base_url)
     dictfile = unzip_noaa_folders(lszip, base_url)
-    save_csv_files(dictfile, directory)
-    get_dataset_size
+
+    if start_year in dictfile.keys() and end_year in dictfile.keys():
+        save_csv_files(dictfile, directory)
+        get_dataset_size
+    else:
+        print(f'Please enter a start year >= 1981 and end year <= {datetime.datetime.now().year}')

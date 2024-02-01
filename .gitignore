@@ -5,3 +5,5 @@
 /dbt/noaa_data/logs
 /tmp
 .vscode
+__pycache__
+.prefectignore

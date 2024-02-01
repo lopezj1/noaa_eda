@@ -1,5 +1,6 @@
 import datetime
 from pathlib import Path
+import sys
 import requests
 import pandas as pd
 from io import BytesIO
@@ -54,7 +55,7 @@ def save_csv_files(dictfile: dict, directory: Path) -> None:
     for filename, file in dictfile.items():
         trunc_fn = filename.split(".")[0]
         output_file = directory / f'{trunc_fn}.csv'
-        
+            
         try:
             with open(output_file, "wb") as outfile:
                 outfile.write(file)
@@ -91,8 +92,28 @@ def extract_noaa_data(base_url: str, directory: Path, start_year: int, end_year:
     lszip = fetch_noaa_zip_folders(base_url)
     dictfile = unzip_noaa_folders(lszip, base_url)
 
-    if start_year in dictfile.keys() and end_year in dictfile.keys():
-        save_csv_files(dictfile, directory)
-        get_dataset_size
+    if len(str(start_year)) == 4 and len(str(end_year)) == 4:
+        filenames_to_filter = []
+        
+        for filename in dictfile.keys():
+            year = int(filename.split(".")[0].split("_")[1][:-1]) #get list of years
+            
+            if start_year <= year <= end_year:
+                continue
+            else:
+                filenames_to_filter.append(filename)
+        
+        #filter out any filenames that don't meet year criteria
+        for filename in filenames_to_filter: 
+            del dictfile[filename] 
+
+        if bool(dictfile): #check that dictfile is not empty
+            save_csv_files(dictfile, directory)
+            get_dataset_size
+        else:
+            print(f'No data available for start year {start_year} and end year {end_year}') #end year is previous calendar year
+            sys.exit(1) #exit if years entered don't have data
+
     else:
-        print(f'Please enter a start year >= 1981 and end year <= {datetime.datetime.now().year}')
+        print(f'Start year {start_year} and/or end year {end_year} are not valid')
+        sys.exit(1) #exit if years are not valid

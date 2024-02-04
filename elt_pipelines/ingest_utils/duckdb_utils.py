@@ -20,7 +20,7 @@ def create_table_query(dataset: str) -> str:
 @task()
 def count_null_query(dataset: str, schema: str) -> str:
     """Return columns with null count within threshold"""
-
+    #have not used, would need to load uncleaned duckdb relation into data warehouse first then can use this query
     query_string = f"""
                     SELECT column_name
                     FROM information_schema.columns
@@ -97,29 +97,36 @@ def create_duckdb_relation(duckdb_path: str, dataset: str, directory: Path) -> d
         relation = con.sql(query_string)
         print(f'\nData Object Details for {dataset}_duckdb_relation\n')
         print(f'\nShape before cleaning: {relation.shape}\n')
-        print(relation.types) 
+        print(relation.dtypes) 
     
     return relation
 
 @flow(log_prints=True)
-def clean_duckdb_relation(duckdb_path: str, dataset:str, relation: duckdb.DuckDBPyRelation, schema: str) -> duckdb.DuckDBPyRelation:
+def clean_duckdb_relation(duckdb_path: str, relation: duckdb.DuckDBPyRelation) -> duckdb.DuckDBPyRelation:
     """clean duckdb relation to prep for loading into warehouse"""
-    query_string = count_null_query(dataset, schema)
-
+    #not practical too slow
     with duckdb.connect(duckdb_path) as con:
-        r1 = con.sql('SELECT * FROM relation')
-        # r2 = con.sql(query_string)
+        r = con.sql("SELECT * FROM 'relation'")
+        cols = r.columns
+        row_count = r.shape[0]
+        filter_cols = []
+        for c in cols:
+            not_null_perc = r.count(column=c).fetchone()[0] / row_count
+            if not_null_perc < 0.99:
+                filter_cols.append(c)
+        
+        filter_cols = ','.join(filter_cols) #conver list of strings to comma separated string
+        r = con.sql(f"SELECT {filter_cols} FROM 'relation'")
+        print(f'\nShape after cleaning: {r.shape}\n')
+        print(r.dtypes) 
 
-        print(f'\nShape after cleaning: {r1.shape}\n')
-        print(r1.types) 
-
-    return r1
+    return relation
 
 @flow(log_prints=True)
 def csv_to_duckdb_relation(duckdb_path: str, dataset: str, directory: Path, schema: str) -> duckdb.DuckDBPyRelation:
     """process csv files into duckdb relation"""
     relation = create_duckdb_relation(duckdb_path, dataset, directory)
-    relation = clean_duckdb_relation(duckdb_path, dataset, relation, schema)
+    relation = clean_duckdb_relation(duckdb_path, relation)
 
     return relation
 

@@ -1,0 +1,208 @@
+version: 2
+
+sources:
+  - name: raw
+    description: ""
+    database: noaa_dw
+    schema: raw
+    tables:
+      - name: catch
+        description: ""
+        columns:
+          - name: date_published
+            data_type: varchar
+            description: ""
+          - name: strat_id
+            data_type: varchar
+            description: ""
+          - name: mode_fx
+            data_type: bigint
+            description: ""
+          - name: area_x
+            data_type: bigint
+            description: ""
+          - name: st
+            data_type: bigint
+            description: ""
+          - name: sub_reg
+            data_type: bigint
+            description: ""
+          - name: wave
+            data_type: bigint
+            description: ""
+          - name: kod
+            data_type: varchar
+            description: ""
+          - name: release
+            data_type: double
+            description: ""
+          - name: harvest
+            data_type: double
+            description: ""
+          - name: claim_unadj
+            data_type: bigint
+            description: ""
+          - name: harvest_unadj
+            data_type: bigint
+            description: ""
+          - name: release_unadj
+            data_type: bigint
+            description: ""
+          - name: tot_len_b1
+            data_type: double
+            description: ""
+          - name: fl_reg
+            data_type: bigint
+            description: ""
+          - name: wp_int
+            data_type: double
+            description: ""
+          - name: wp_catch
+            data_type: double
+            description: ""
+          - name: id_code
+            data_type: bigint
+            description: ""
+          - name: year
+            data_type: bigint
+            description: ""
+
+      - name: size
+        description: ""
+        columns:
+          - name: var_id
+            data_type: varchar
+            description: ""
+          - name: alt_flag
+            data_type: varchar
+            description: ""
+          - name: date_published
+            data_type: varchar
+            description: ""
+          - name: mode_fx
+            data_type: bigint
+            description: ""
+          - name: area_x
+            data_type: bigint
+            description: ""
+          - name: st
+            data_type: bigint
+            description: ""
+          - name: sub_reg
+            data_type: bigint
+            description: ""
+          - name: wave
+            data_type: bigint
+            description: ""
+          - name: kod
+            data_type: varchar
+            description: ""
+          - name: lngth_imp
+            data_type: bigint
+            description: ""
+          - name: wgt_imp
+            data_type: bigint
+            description: ""
+          - name: strat_id
+            data_type: varchar
+            description: ""
+          - name: wp_size
+            data_type: double
+            description: ""
+          - name: id_code
+            data_type: bigint
+            description: ""
+          - name: year
+            data_type: bigint
+            description: ""
+
+      - name: trip
+        description: ""
+        columns:
+          - name: date_published
+            data_type: varchar
+            description: ""
+          - name: strat_id
+            data_type: varchar
+            description: ""
+          - name: mode_fx
+            data_type: bigint
+            description: ""
+          - name: mode_f
+            data_type: bigint
+            description: ""
+          - name: area_x
+            data_type: bigint
+            description: ""
+          - name: st
+            data_type: bigint
+            description: ""
+          - name: cnty
+            data_type: bigint
+            description: ""
+          - name: intsite
+            data_type: bigint
+            description: ""
+          - name: hrsf
+            data_type: double
+            description: ""
+          - name: ffdays12
+            data_type: bigint
+            description: ""
+          - name: ffdays2
+            data_type: bigint
+            description: ""
+          - name: cnty_res
+            data_type: bigint
+            description: ""
+          - name: st_res
+            data_type: bigint
+            description: ""
+          - name: cntrbtrs
+            data_type: bigint
+            description: ""
+          - name: num_typ2
+            data_type: bigint
+            description: ""
+          - name: num_typ3
+            data_type: bigint
+            description: ""
+          - name: num_typ4
+            data_type: bigint
+            description: ""
+          - name: sub_reg
+            data_type: bigint
+            description: ""
+          - name: wave
+            data_type: bigint
+            description: ""
+          - name: coastal
+            data_type: varchar
+            description: ""
+          - name: catch
+            data_type: bigint
+            description: ""
+          - name: asg_code
+            data_type: bigint
+            description: ""
+          - name: kod
+            data_type: varchar
+            description: ""
+          - name: wp_int
+            data_type: double
+            description: ""
+          - name: var_id
+            data_type: varchar
+            description: ""
+          - name: alt_flag
+            data_type: bigint
+            description: ""
+          - name: leader
+            data_type: varchar
+            description: ""
+          - name: id_code
+            data_type: varchar
+            description: ""
+          - name: year
+            data_type: bigint
+            description: ""

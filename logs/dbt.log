@@ -40,3 +40,17 @@ Runtime Error
 [0m23:41:44.348980 [debug] [MainThread]: Command `dbt compile` failed at 23:41:44.348980 after 0.07 seconds
 [0m23:41:44.349842 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000223482C70D0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000223414305D0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000022341430590>]}
 [0m23:41:44.350365 [debug] [MainThread]: Flushing usage events
+[0m16:50:31.370232 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001EEDBC6A110>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001EED4E24510>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001EEDBC732D0>]}
+
+
+============================== 16:50:31.375232 | cab7d695-f3e8-416a-9c96-6f695f79d469 ==============================
+[0m16:50:31.375232 [info ] [MainThread]: Running with dbt=1.7.4
+[0m16:50:31.376233 [debug] [MainThread]: running dbt with arguments {'printer_width': '80', 'indirect_selection': 'eager', 'log_cache_events': 'False', 'write_json': 'True', 'partial_parse': 'True', 'cache_selected_only': 'False', 'warn_error': 'None', 'version_check': 'True', 'debug': 'False', 'log_path': 'logs', 'profiles_dir': 'C:\\Users\\JLopez.SOLIDIATECH\\.dbt', 'fail_fast': 'False', 'use_colors': 'True', 'use_experimental_parser': 'False', 'no_print': 'None', 'quiet': 'False', 'log_format': 'default', 'invocation_command': 'dbt compile', 'warn_error_options': 'WarnErrorOptions(include=[], exclude=[])', 'static_parser': 'True', 'target_path': 'None', 'introspect': 'True', 'send_anonymous_usage_stats': 'True'}
+[0m16:50:31.376233 [error] [MainThread]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path C:\Users\JLopez.SOLIDIATECH\de_projects\noaa_eda\dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m16:50:31.378233 [debug] [MainThread]: Command `dbt compile` failed at 16:50:31.378233 after 0.08 seconds
+[0m16:50:31.379233 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001EEDA17D050>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001EEDBC4C490>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001EED4D20710>]}
+[0m16:50:31.379233 [debug] [MainThread]: Flushing usage events

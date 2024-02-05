@@ -33,6 +33,9 @@ sources:
           - name: kod
             data_type: varchar
             description: ""
+          - name: claim
+            data_type: double
+            description: ""
           - name: release
             data_type: double
             description: ""
@@ -48,11 +51,32 @@ sources:
           - name: release_unadj
             data_type: bigint
             description: ""
+          - name: tot_len_a
+            data_type: double
+            description: ""
+          - name: wgt_a
+            data_type: double
+            description: ""
           - name: tot_len_b1
+            data_type: double
+            description: ""
+          - name: wgt_b1
+            data_type: double
+            description: ""
+          - name: tot_cat
+            data_type: double
+            description: ""
+          - name: wgt_ab1
+            data_type: double
+            description: ""
+          - name: tot_len
             data_type: double
             description: ""
           - name: fl_reg
             data_type: bigint
+            description: ""
+          - name: wp_catch_precal
+            data_type: double
             description: ""
           - name: wp_int
             data_type: double
@@ -70,6 +94,9 @@ sources:
       - name: size
         description: ""
         columns:
+          - name: common
+            data_type: varchar
+            description: ""
           - name: var_id
             data_type: varchar
             description: ""
@@ -97,6 +124,9 @@ sources:
           - name: kod
             data_type: varchar
             description: ""
+          - name: wgt
+            data_type: double
+            description: ""
           - name: lngth_imp
             data_type: bigint
             description: ""
@@ -108,6 +138,12 @@ sources:
             description: ""
           - name: wp_size
             data_type: double
+            description: ""
+          - name: l_in_bin
+            data_type: bigint
+            description: ""
+          - name: l_cm_bin
+            data_type: bigint
             description: ""
           - name: id_code
             data_type: bigint
@@ -133,6 +169,9 @@ sources:
             description: ""
           - name: area_x
             data_type: bigint
+            description: ""
+          - name: area
+            data_type: varchar
             description: ""
           - name: st
             data_type: bigint
@@ -173,6 +212,9 @@ sources:
           - name: sub_reg
             data_type: bigint
             description: ""
+          - name: reg_res
+            data_type: bigint
+            description: ""
           - name: wave
             data_type: bigint
             description: ""
@@ -186,6 +228,33 @@ sources:
             data_type: bigint
             description: ""
           - name: kod
+            data_type: varchar
+            description: ""
+          - name: prt_code
+            data_type: varchar
+            description: ""
+          - name: fl_reg
+            data_type: bigint
+            description: ""
+          - name: dist
+            data_type: varchar
+            description: ""
+          - name: zip
+            data_type: varchar
+            description: ""
+          - name: time
+            data_type: varchar
+            description: ""
+          - name: gear
+            data_type: varchar
+            description: ""
+          - name: pvt_res
+            data_type: varchar
+            description: ""
+          - name: sep_fish
+            data_type: varchar
+            description: ""
+          - name: f_by_p
             data_type: varchar
             description: ""
           - name: wp_int
@@ -203,6 +272,12 @@ sources:
           - name: id_code
             data_type: varchar
             description: ""
+          - name: num_typ6
+            data_type: varchar
+            description: ""
           - name: year
             data_type: bigint
+            description: ""
+          - name: add_ph
+            data_type: varchar
             description: ""

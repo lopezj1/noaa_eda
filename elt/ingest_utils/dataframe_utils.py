@@ -22,6 +22,8 @@ def create_pandas_df(dataset: str, directory: Path) -> pd.DataFrame:
     print(f'\nData Object Details for {dataset}_pandas_df\n')
     print(f'\nShape before cleaning: {df.shape}\n')
     print(df.dtypes)
+    print(f'First row of data: \n {df.head(1)}')
+    print(f'Last row of data: \n {df.tail(1)}')
 
     return df
 
@@ -36,27 +38,32 @@ def create_polars_df(dataset: str, directory: Path) -> pl.DataFrame:
     print(f'\nData Object Details for {dataset}_polars_df\n')
     print(f'\nShape before cleaning: {df.shape}\n')
     print(df.dtypes)
+    print(f'First row of data: \n {df.head(1)}')
+    print(f'Last row of data: \n {df.tail(1)}')
 
     return df
 
 @task()
-def clean_pandas_df(df: pd.DataFrame) -> pd.DataFrame:
+def clean_pandas_df(df: pd.DataFrame, null_threshold: float = 0.20) -> pd.DataFrame:
     """Clean up pandas dataframe to prep for loading into warehouse"""
-    threshold = df.shape[0] * 0.99 #set NaN value threshold to 99% of values
+    threshold = df.shape[0] * (1 - null_threshold) #require this many non-NA values
     pattern = r'all|area' #remove these erroneous values
     df = df.fillna(value=np.nan).replace(to_replace=pattern,value=np.nan,regex=True).dropna(axis=1,thresh=threshold).dropna(axis=0,how="all")
     print(f'\nShape after cleaning: {df.shape}\n')
     print(df.dtypes)
+    print(f'First row of data: \n {df.head(1)}')
+    print(f'Last row of data: \n {df.tail(1)}')
 
     return df
 
 @task()
-def clean_polars_df(df: pl.DataFrame) -> pl.DataFrame:
+def clean_polars_df(df: pl.DataFrame, null_threshold: float = 0.20) -> pl.DataFrame:
     """Clean up polars dataframe to prep for loading into warehouse"""
     lf = df.lazy()
     lf_query = (
         lf
-        .select(col.name for col in df.null_count() / df.height if col.item() <= 0.01) #select columns that have < 1% null values
+        .select(col.name for col in df.null_count() / df.height if col.item() <= null_threshold) 
+        # .drop(col.name for col in df.null_count() / df.height if col.item() > null_threshold) 
         .filter(~pl.all_horizontal(pl.all().is_null())) #filter out any rows that contain all null values
         # .select(pl.all().is_nan().all().is_not()) #won't work for columns of dtype = string
     )
@@ -64,6 +71,8 @@ def clean_polars_df(df: pl.DataFrame) -> pl.DataFrame:
     df = lf_query.collect()
     print(f'\nShape after cleaning: {df.shape}\n')
     print(df.dtypes)
+    print(f'First row of data: \n {df.head(1)}')
+    print(f'Last row of data: \n {df.tail(1)}')
 
     return df
 

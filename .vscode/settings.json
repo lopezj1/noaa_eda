@@ -2,5 +2,7 @@
     "sqltools.connections": [],
     "dbt.queryLimit": 500,
     "dbt.enableNewQueryPanel": true,
-    "python.defaultInterpreterPath": "C:\\Users\\JLopez.SOLIDIATECH\\AppData\\Local\\miniconda3\\envs\\noaa_eda\\python.exe"
+    "python.defaultInterpreterPath": "C:\\Users\\JLopez.SOLIDIATECH\\AppData\\Local\\miniconda3\\envs\\noaa_eda\\python.exe",
+    "dbt.queryScale": 1,
+    "dbt.enableNewLineagePanel": true
 }

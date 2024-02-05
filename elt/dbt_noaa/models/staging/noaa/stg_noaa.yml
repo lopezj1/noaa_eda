@@ -1,263 +1,239 @@
 version: 2
 
 models:
-  - name: stg_noaa__trips
+  - name: stg_noaa__catches
     description: ""
     columns:
+      - name: noaa_id
+        data_type: bigint
+        description: ""
+
       - name: date_published
         data_type: varchar
         description: ""
 
-      - name: strat_id
+      - name: fishing_method_collapsed
         data_type: varchar
         description: ""
 
-      - name: mode_fx
+      - name: nautical_zone
+        data_type: varchar
+        description: ""
+
+      - name: state_code
         data_type: bigint
         description: ""
 
-      - name: mode_f
+      - name: us_region
+        data_type: varchar
+        description: ""
+
+      - name: sampling_period
+        data_type: varchar
+        description: ""
+
+      - name: year_of_survey
         data_type: bigint
         description: ""
 
-      - name: area_x
-        data_type: bigint
+      - name: weekend
+        data_type: integer
         description: ""
 
-      - name: st
-        data_type: bigint
-        description: ""
-
-      - name: cnty
-        data_type: bigint
-        description: ""
-
-      - name: intsite
-        data_type: bigint
-        description: ""
-
-      - name: hrsf
+      - name: num_fish_harvested_observed_adjusted
         data_type: double
         description: ""
 
-      - name: ffdays12
-        data_type: bigint
-        description: ""
-
-      - name: ffdays2
-        data_type: bigint
-        description: ""
-
-      - name: cnty_res
-        data_type: bigint
-        description: ""
-
-      - name: st_res
-        data_type: bigint
-        description: ""
-
-      - name: cntrbtrs
-        data_type: bigint
-        description: ""
-
-      - name: num_typ2
-        data_type: bigint
-        description: ""
-
-      - name: num_typ3
-        data_type: bigint
-        description: ""
-
-      - name: num_typ4
-        data_type: bigint
-        description: ""
-
-      - name: sub_reg
-        data_type: bigint
-        description: ""
-
-      - name: wave
-        data_type: bigint
-        description: ""
-
-      - name: coastal
-        data_type: varchar
-        description: ""
-
-      - name: catch
-        data_type: bigint
-        description: ""
-
-      - name: asg_code
-        data_type: bigint
-        description: ""
-
-      - name: kod
-        data_type: varchar
-        description: ""
-
-      - name: wp_int
+      - name: num_fish_harvested_unobserved_adjusted
         data_type: double
         description: ""
 
-      - name: var_id
-        data_type: varchar
+      - name: num_fish_released_adjusted
+        data_type: double
         description: ""
 
-      - name: alt_flag
+      - name: num_fish_harvested_observed_unadjusted
         data_type: bigint
         description: ""
 
-      - name: leader
-        data_type: varchar
-        description: ""
-
-      - name: id_code
-        data_type: varchar
-        description: ""
-
-      - name: year
+      - name: num_fish_harvested_unobserved_unadjusted
         data_type: bigint
+        description: ""
+
+      - name: num_fish_released_unadjusted
+        data_type: bigint
+        description: ""
+
+      - name: total_number_fish_caught
+        data_type: double
+        description: ""
+
+      - name: total_length_fish_harvested_mm
+        data_type: double
+        description: ""
+
+      - name: total_length_fish_harvested_observed_mm
+        data_type: double
+        description: ""
+
+      - name: total_length_fish_harvested_unobserved_mm
+        data_type: double
+        description: ""
+
+      - name: total_weight_fish_harvested_kg
+        data_type: double
+        description: ""
+
+      - name: total_weight_fish_harvested_observed_kg
+        data_type: double
+        description: ""
+
+      - name: total_weight_fish_harvested_unobserved_kg
+        data_type: double
+        description: ""
+
+  - name: stg_noaa__trips
+    description: ""
+    columns:
+      - name: noaa_id
+        data_type: varchar
+        description: ""
+
+      - name: date_published
+        data_type: varchar
+        description: ""
+
+      - name: fishing_method_collapsed
+        data_type: varchar
+        description: ""
+
+      - name: fishing_method_uncollapsed
+        data_type: varchar
+        description: ""
+
+      - name: nautical_zone
+        data_type: varchar
+        description: ""
+
+      - name: state_code
+        data_type: bigint
+        description: ""
+
+      - name: county_code_where_caught
+        data_type: bigint
+        description: ""
+
+      - name: fishing_effort_hours
+        data_type: double
+        description: ""
+
+      - name: number_of_outings_in_last_year
+        data_type: bigint
+        description: ""
+
+      - name: number_of_outings_in_last_2_months
+        data_type: bigint
+        description: ""
+
+      - name: county_code_where_fisherman_resides
+        data_type: bigint
+        description: ""
+
+      - name: state_code_where_fisherman_resides
+        data_type: bigint
+        description: ""
+
+      - name: number_of_anglers_interviewed
+        data_type: bigint
+        description: ""
+
+      - name: us_region
+        data_type: varchar
+        description: ""
+
+      - name: sampling_period
+        data_type: varchar
+        description: ""
+
+      - name: year_of_survey
+        data_type: bigint
+        description: ""
+
+      - name: fisherman_state_residency_status
+        data_type: varchar
+        description: ""
+
+      - name: caught
+        data_type: integer
+        description: ""
+
+      - name: weekend
+        data_type: integer
+        description: ""
+
+      - name: time_fish_caught
+        data_type: varchar
         description: ""
 
   - name: stg_noaa__sizes
     description: ""
     columns:
-      - name: var_id
-        data_type: varchar
-        description: ""
-
-      - name: alt_flag
-        data_type: varchar
+      - name: noaa_id
+        data_type: bigint
         description: ""
 
       - name: date_published
         data_type: varchar
         description: ""
 
-      - name: mode_fx
-        data_type: bigint
-        description: ""
-
-      - name: area_x
-        data_type: bigint
-        description: ""
-
-      - name: st
-        data_type: bigint
-        description: ""
-
-      - name: sub_reg
-        data_type: bigint
-        description: ""
-
-      - name: wave
-        data_type: bigint
-        description: ""
-
-      - name: kod
+      - name: fishing_method_collapsed
         data_type: varchar
         description: ""
 
-      - name: lngth_imp
-        data_type: bigint
-        description: ""
-
-      - name: wgt_imp
-        data_type: bigint
-        description: ""
-
-      - name: strat_id
+      - name: nautical_zone
         data_type: varchar
         description: ""
 
-      - name: wp_size
-        data_type: double
-        description: ""
-
-      - name: id_code
+      - name: state_code
         data_type: bigint
         description: ""
 
-      - name: year
-        data_type: bigint
-        description: ""
-
-  - name: stg_noaa__catches
-    description: ""
-    columns:
-      - name: date_published
+      - name: us_region
         data_type: varchar
         description: ""
 
-      - name: strat_id
+      - name: sampling_period
         data_type: varchar
         description: ""
 
-      - name: mode_fx
+      - name: year_of_survey
         data_type: bigint
         description: ""
 
-      - name: area_x
-        data_type: bigint
+      - name: weekend
+        data_type: integer
         description: ""
 
-      - name: st
-        data_type: bigint
-        description: ""
-
-      - name: sub_reg
-        data_type: bigint
-        description: ""
-
-      - name: wave
-        data_type: bigint
-        description: ""
-
-      - name: kod
+      - name: species_common_name
         data_type: varchar
         description: ""
 
-      - name: release
+      - name: fish_weight_kg
         data_type: double
         description: ""
 
-      - name: harvest
-        data_type: double
-        description: ""
-
-      - name: claim_unadj
+      - name: imputed_weight
         data_type: bigint
         description: ""
 
-      - name: harvest_unadj
+      - name: fish_length_in
         data_type: bigint
         description: ""
 
-      - name: release_unadj
+      - name: fish_length_cm
         data_type: bigint
         description: ""
 
-      - name: tot_len_b1
-        data_type: double
-        description: ""
-
-      - name: fl_reg
-        data_type: bigint
-        description: ""
-
-      - name: wp_int
-        data_type: double
-        description: ""
-
-      - name: wp_catch
-        data_type: double
-        description: ""
-
-      - name: id_code
-        data_type: bigint
-        description: ""
-
-      - name: year
+      - name: imputed_length
         data_type: bigint
         description: ""

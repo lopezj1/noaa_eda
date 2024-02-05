@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import polars as pl
 from prefect import flow, task
+from ingest_utils import dataframe_utils
 
 @task()
 def create_table_query(dataset: str) -> str:
@@ -97,7 +98,9 @@ def create_duckdb_relation(duckdb_path: str, dataset: str, directory: Path) -> d
         relation = con.sql(query_string)
         print(f'\nData Object Details for {dataset}_duckdb_relation\n')
         print(f'\nShape before cleaning: {relation.shape}\n')
-        print(relation.dtypes) 
+        print(relation.dtypes)
+        print(f'First row of data: \n {relation.limit(1).fetchone()[0]}')
+        print(f'First row of data: \n {relation.order("id DESC").limit(1).fetchone()[0]}')
     
     return relation
 
@@ -123,12 +126,15 @@ def clean_duckdb_relation(duckdb_path: str, relation: duckdb.DuckDBPyRelation) -
     return relation
 
 @flow(log_prints=True)
-def csv_to_duckdb_relation(duckdb_path: str, dataset: str, directory: Path, schema: str) -> duckdb.DuckDBPyRelation:
+def csv_to_duckdb_relation(duckdb_path: str, dataset: str, directory: Path) -> duckdb.DuckDBPyRelation:
     """process csv files into duckdb relation"""
     relation = create_duckdb_relation(duckdb_path, dataset, directory)
-    relation = clean_duckdb_relation(duckdb_path, relation)
+    # relation = clean_duckdb_relation(duckdb_path, relation)
+    df = duckdb_relation_to_polars_df(duckdb_path, relation, dataset)
+    df = dataframe_utils.clean_polars_df(df)
 
-    return relation
+    # return relation
+    return df
 
 @task()
 def duckdb_relation_to_pandas_df_(duckdb_path: str, relation: duckdb.DuckDBPyRelation, dataset: str, chunk: bool = True) -> pd.DataFrame:

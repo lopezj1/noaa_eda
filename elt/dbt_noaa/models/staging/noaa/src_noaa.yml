@@ -270,7 +270,7 @@ sources:
             data_type: varchar
             description: ""
           - name: id_code
-            data_type: varchar
+            data_type: bigint
             description: ""
           - name: num_typ6
             data_type: varchar

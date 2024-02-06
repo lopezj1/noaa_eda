@@ -1,0 +1,1 @@
+select noaa_id, count(*) from {{ ref('stg_noaa__trips') }} group by noaa_id

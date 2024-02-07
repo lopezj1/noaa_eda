@@ -23,7 +23,7 @@ def ingest_noaa(start_year: int = 1981, end_year: int = 2023, processing_method:
     optimal_methods = [optimal_processing_method(dataset, TMP_DIR, DUCKDB_PATH) for dataset in DATASETS]
     optimal_method = max(set(optimal_methods), key = optimal_methods.count) #get most optimal out of 3
     '''
-    main_utils.drop_schema(DUCKDB_PATH, SCHEMA) #drop schema
+    main_utils.drop_db_objects(DUCKDB_PATH, SCHEMA, DATASETS) #drop db objects
 
     #generate objects based on processing_method passed to then Insert into duckdb table
     if processing_method in PROCESSING_METHODS:

@@ -1,103 +1,15 @@
 version: 2
 
 models:
-  - name: stg_noaa__catches
-    description: ""
-    columns:
-      - name: noaa_id
-        data_type: bigint
-        description: ""
-
-      - name: date_published
-        data_type: varchar
-        description: ""
-
-      - name: fishing_method_collapsed
-        data_type: varchar
-        description: ""
-
-      - name: nautical_zone
-        data_type: varchar
-        description: ""
-
-      - name: state_code
-        data_type: bigint
-        description: ""
-
-      - name: us_region
-        data_type: varchar
-        description: ""
-
-      - name: sampling_period
-        data_type: varchar
-        description: ""
-
-      - name: year_of_survey
-        data_type: bigint
-        description: ""
-
-      - name: weekend
-        data_type: integer
-        description: ""
-
-      - name: num_fish_harvested_observed_adjusted
-        data_type: double
-        description: ""
-
-      - name: num_fish_harvested_unobserved_adjusted
-        data_type: double
-        description: ""
-
-      - name: num_fish_released_adjusted
-        data_type: double
-        description: ""
-
-      - name: num_fish_harvested_observed_unadjusted
-        data_type: bigint
-        description: ""
-
-      - name: num_fish_harvested_unobserved_unadjusted
-        data_type: bigint
-        description: ""
-
-      - name: num_fish_released_unadjusted
-        data_type: bigint
-        description: ""
-
-      - name: total_number_fish_caught
-        data_type: double
-        description: ""
-
-      - name: total_length_fish_harvested_mm
-        data_type: double
-        description: ""
-
-      - name: total_length_fish_harvested_observed_mm
-        data_type: double
-        description: ""
-
-      - name: total_length_fish_harvested_unobserved_mm
-        data_type: double
-        description: ""
-
-      - name: total_weight_fish_harvested_kg
-        data_type: double
-        description: ""
-
-      - name: total_weight_fish_harvested_observed_kg
-        data_type: double
-        description: ""
-
-      - name: total_weight_fish_harvested_unobserved_kg
-        data_type: double
-        description: ""
-
   - name: stg_noaa__trips
     description: ""
     columns:
       - name: noaa_id
-        data_type: varchar
+        data_type: bigint
         description: ""
+        tests:
+          - unique
+          - not_null
 
       - name: date_published
         data_type: varchar
@@ -116,35 +28,35 @@ models:
         description: ""
 
       - name: state_code
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: county_code_where_caught
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: fishing_effort_hours
-        data_type: double
+        data_type: varchar
         description: ""
 
       - name: number_of_outings_in_last_year
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: number_of_outings_in_last_2_months
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: county_code_where_fisherman_resides
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: state_code_where_fisherman_resides
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: number_of_anglers_interviewed
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: us_region
@@ -156,7 +68,7 @@ models:
         description: ""
 
       - name: year_of_survey
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: fisherman_state_residency_status
@@ -181,6 +93,9 @@ models:
       - name: noaa_id
         data_type: bigint
         description: ""
+        tests:
+          - unique
+          - not_null
 
       - name: date_published
         data_type: varchar
@@ -195,7 +110,7 @@ models:
         description: ""
 
       - name: state_code
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: us_region
@@ -207,7 +122,7 @@ models:
         description: ""
 
       - name: year_of_survey
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: weekend
@@ -219,21 +134,115 @@ models:
         description: ""
 
       - name: fish_weight_kg
-        data_type: double
+        data_type: varchar
         description: ""
 
       - name: imputed_weight
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: fish_length_in
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: fish_length_cm
-        data_type: bigint
+        data_type: varchar
         description: ""
 
       - name: imputed_length
+        data_type: varchar
+        description: ""
+
+  - name: stg_noaa__catches
+    description: ""
+    columns:
+      - name: noaa_id
         data_type: bigint
+        description: ""
+        tests:
+          - unique
+          - not_null
+          
+      - name: date_published
+        data_type: varchar
+        description: ""
+
+      - name: fishing_method_collapsed
+        data_type: varchar
+        description: ""
+
+      - name: nautical_zone
+        data_type: varchar
+        description: ""
+
+      - name: state_code
+        data_type: varchar
+        description: ""
+
+      - name: us_region
+        data_type: varchar
+        description: ""
+
+      - name: sampling_period
+        data_type: varchar
+        description: ""
+
+      - name: year_of_survey
+        data_type: varchar
+        description: ""
+
+      - name: weekend
+        data_type: integer
+        description: ""
+
+      - name: num_fish_harvested_observed_adjusted
+        data_type: varchar
+        description: ""
+
+      - name: num_fish_harvested_unobserved_adjusted
+        data_type: varchar
+        description: ""
+
+      - name: num_fish_released_adjusted
+        data_type: varchar
+        description: ""
+
+      - name: num_fish_harvested_observed_unadjusted
+        data_type: varchar
+        description: ""
+
+      - name: num_fish_harvested_unobserved_unadjusted
+        data_type: varchar
+        description: ""
+
+      - name: num_fish_released_unadjusted
+        data_type: varchar
+        description: ""
+
+      - name: total_number_fish_caught
+        data_type: varchar
+        description: ""
+
+      - name: total_length_fish_harvested_mm
+        data_type: varchar
+        description: ""
+
+      - name: total_length_fish_harvested_observed_mm
+        data_type: varchar
+        description: ""
+
+      - name: total_length_fish_harvested_unobserved_mm
+        data_type: varchar
+        description: ""
+
+      - name: total_weight_fish_harvested_kg
+        data_type: varchar
+        description: ""
+
+      - name: total_weight_fish_harvested_observed_kg
+        data_type: varchar
+        description: ""
+
+      - name: total_weight_fish_harvested_unobserved_kg
+        data_type: varchar
         description: ""

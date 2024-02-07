@@ -33,7 +33,7 @@ def create_polars_df(dataset: str, directory: Path) -> pl.DataFrame:
     print(f'\nCreating polars dataframe for {dataset} dataset\n')
 
     csv_files = get_csv_files_by_dataset(dataset, directory)
-    df_list = [pl.read_csv(file, ignore_errors=True) for file in csv_files] #create list of dataframes - 1 for each file
+    df_list = [pl.read_csv(file, infer_schema_length=0) for file in csv_files] #create list of dataframes - 1 for each file, all columns will be pl.String
     df = pl.concat(df_list, how="diagonal_relaxed") #concat all dataframes in list into 1 dataframe
     print(f'\nData Object Details for {dataset}_polars_df\n')
     print(f'\nShape before cleaning: {df.shape}\n')
@@ -60,12 +60,16 @@ def clean_pandas_df(df: pd.DataFrame, null_threshold: float = 0.20) -> pd.DataFr
 def clean_polars_df(df: pl.DataFrame, null_threshold: float = 0.20) -> pl.DataFrame:
     """Clean up polars dataframe to prep for loading into warehouse"""
     lf = df.lazy()
+    # regex_pattern = r'^[0-9]+$'
+    regex_pattern = r'^[0-9]{16}$' #returns true if the string consists of only digits 0-9 and is exactly 16 characters long
     lf_query = (
         lf
         .select(col.name for col in df.null_count() / df.height if col.item() <= null_threshold) 
-        # .drop(col.name for col in df.null_count() / df.height if col.item() > null_threshold) 
         .filter(~pl.all_horizontal(pl.all().is_null())) #filter out any rows that contain all null values
-        # .select(pl.all().is_nan().all().is_not()) #won't work for columns of dtype = string
+        # .filter(pl.col('ID_CODE').str.len_chars() == 16)#only select records where id_code is 16 characters long
+        .filter(pl.col('ID_CODE').str.contains(regex_pattern))#only select records where id_code contains only numeric values
+        .unique(subset='ID_CODE',keep='none') #only select records where id_code is unique 
+        
     )
     print(f'\nlazy execution plan:\n{lf_query.explain()}')
     df = lf_query.collect()

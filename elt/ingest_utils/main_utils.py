@@ -67,10 +67,14 @@ def create_table_for_dataset(duckdb_path: str, dict_dfs: dict, schema: str) -> N
         duckdb_utils.results_duckdb_query(duckdb_path, f"SELECT * FROM noaa_dw.{schema}.{dataset}")
         duckdb_utils.results_duckdb_query(duckdb_path, f"SELECT COUNT(*) FROM noaa_dw.{schema}.{dataset}")
         duckdb_utils.results_duckdb_query(duckdb_path, f"DESCRIBE noaa_dw.{schema}.{dataset}")
+        duckdb_utils.results_duckdb_query(duckdb_path, "select * from duckdb_indexes()") 
 
 @flow(log_prints=True)
-def drop_schema(duckdb_path: str, schema: str) -> None:
+def drop_db_objects(duckdb_path: str, schema: str, datasets: list) -> None:
     """drop schema and all tables within it"""
+    query_string = duckdb_utils.drop_index_query(datasets)
     query_string = duckdb_utils.drop_schema_query(schema)
     duckdb_utils.execute_duckdb_query(duckdb_path, query_string)
+    duckdb_utils.execute_duckdb_query(duckdb_path, query_string)
     duckdb_utils.results_duckdb_query(duckdb_path, "SELECT * FROM INFORMATION_SCHEMA.tables")
+    duckdb_utils.results_duckdb_query(duckdb_path, "select * from duckdb_indexes()")

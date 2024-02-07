@@ -13,7 +13,8 @@ def create_table_query(dataset: str) -> str:
             CREATE SCHEMA IF NOT EXISTS raw;
             USE noaa_dw.raw;
             CREATE OR REPLACE TABLE {dataset} AS
-            SELECT * FROM 'data_object'; 
+            SELECT * FROM 'data_object';
+            CREATE UNIQUE INDEX pk_noaa_{dataset} ON raw.{dataset} (ID_CODE)
             """
 
     return query_string
@@ -44,6 +45,15 @@ def drop_schema_query(schema: str) -> str:
     """Drop schema recursively"""
 
     query_string = f"DROP SCHEMA IF EXISTS {schema} CASCADE"
+
+    return query_string
+
+@task()
+def drop_index_query(datasets: list) -> str:
+    """Drop index"""
+
+    for dataset in datasets:
+        query_string = f"DROP INDEX pk_noaa_{dataset};"
 
     return query_string
 

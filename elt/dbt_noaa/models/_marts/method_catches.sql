@@ -20,13 +20,13 @@ top_species as (
 joined as (
 
         select
-        t.us_region,
+        t.fishing_method_uncollapsed,
         s.species_common_name,
         try_cast(t.caught as int) as caught
         from trips t
         left join sizes s on s.fishing_trip_id = t.fishing_trip_id
         where 
-        t.us_region is not null
+        t.fishing_method_uncollapsed is not null
         and
         t.caught is not null
         and
@@ -37,7 +37,7 @@ joined as (
 windowed as (
 
         select
-        us_region,
+        fishing_method_uncollapsed,
         species_common_name,
         caught / sum(caught) over (partition by species_common_name) as catch_rate 
         from joined        
@@ -47,7 +47,7 @@ windowed as (
 pivoted as (
 
         pivot windowed 
-        on us_region
+        on fishing_method_uncollapsed
         using sum(catch_rate)
         order by species_common_name
 

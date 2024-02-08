@@ -1,11 +1,10 @@
-{% set fishing_seasons = ['Spring', 'Summer', 'Fall', 'Winter'] %}
-
 with
 sizes as (
 
         select * from {{ ref('stg_noaa__sizes') }}
 
 ),
+
 trips as (
 
         select * from {{ ref('int_trips_fips_join') }}
@@ -18,48 +17,38 @@ top_species as (
 
 ),
 
-total_trip_count as (
-
-        select * from {{ ref('int_total_trip_count') }}
-
-),
-
 joined as (
 
         select
-        t.trip_year,
         t.fishing_season,
-        try_cast(t.caught as int) as caught,
         s.species_common_name,
+        try_cast(t.caught as int) as caught
         from trips t
         left join sizes s on s.fishing_trip_id = t.fishing_trip_id
-        where t.fishing_season is not null
+        where 
+        t.fishing_season is not null
         and
-        s.species_common_name in (
-
-                                select species_common_name from top_species
-
-        )
+        t.caught is not null
+        and
+        s.species_common_name in (select species_common_name from top_species)
 
 ),
 
-grouped as (
+windowed as (
 
         select
-        species_common_name,
         fishing_season,
-        round(sum(caught) / (select * from total_trip_count) * 100, 2) as catch_rate
-        from joined
-        group by 1, 2
-        order by 1, 2
+        species_common_name,
+        caught / sum(caught) over (partition by species_common_name) as catch_rate 
+        from joined        
 
 ),
 
 pivoted as (
 
-        pivot grouped 
+        pivot windowed 
         on fishing_season
-        using avg(catch_rate)
+        using sum(catch_rate)
         order by species_common_name
 
 )

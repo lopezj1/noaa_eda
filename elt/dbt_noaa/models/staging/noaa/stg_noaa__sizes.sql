@@ -7,12 +7,21 @@ with source as (
 renamed as (
 
     select
-        cast(id_code as bigint) as noaa_id,
+        cast(id_code as bigint) as fishing_trip_id,
         cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
         cast(substring(id_code, 6, 4) as int) as trip_year,
         cast(substring(id_code, 10, 2) as int) trip_month_num,
         cast(substring(id_code, 12, 2) as int) as trip_day_num,
-        make_date(trip_year, trip_month_num, trip_day_num) as trip_date,
+        case
+            when 
+            trip_month_num in (1,3,5,7,8,10,12) and trip_day_num <= 31
+            or
+            trip_month_num in (4,6,9,11) and trip_day_num <= 30
+            or
+            trip_month_num = 2 and trip_day_num <= 29
+            then make_date(trip_year, trip_month_num, trip_day_num) 
+            else NULL
+        end as trip_date,
         dayname(trip_date) as trip_day_of_week,
         monthname(trip_date) as trip_month_name,
         case
@@ -31,10 +40,9 @@ renamed as (
             when wave = 6 then 'November/December'
             else NULL
         end as sampling_period,
-        year as survey_year,
         case 
-            when kod = 'wd' then 0
-            when kod = 'we' then 1
+            when kod = 'wd' then false
+            when kod = 'we' then true
             else NULL
         end as weekend,
         case 
@@ -64,13 +72,13 @@ renamed as (
             when mode_fx = 7 then 'Private/Rental Boat'
             else NULL
         end as fishing_method_collapsed,
-        st AS state_code_where_caught,
-        common as species_common_name,
-        wgt as fish_weight_kg,
-        wgt_imp as imputed_weight,
-        l_in_bin as fish_length_in,
-        l_cm_bin as fish_length_cm,
-        lngth_imp as imputed_length
+        cast(st as int) as state_code_where_caught,
+        cast(common as varchar) as species_common_name,
+        round(cast(wgt as double), 2) as fish_weight_kg,
+        cast(wgt_imp as boolean) as imputed_weight,
+        round(cast(l_in_bin as double), 2) as fish_length_in,
+        round(cast(l_cm_bin as double), 2) as fish_length_cm,
+        cast(lngth_imp as boolean) as imputed_length
 
     from source
 

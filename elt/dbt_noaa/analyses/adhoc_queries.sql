@@ -1,12 +1,16 @@
 --get unique id_code that match 16 character format
-select id_code, count(*) from {{ source('raw', 'catch') }} group by id_code having count(*) = 1 and len(id_code) = 16
-select id_code, count(*) from {{ source('raw', 'size') }} group by id_code having count(*) = 1 and len(id_code) = 16
-select id_code, count(*) from {{ source('raw', 'trip') }} group by id_code having count(*) = 1 and len(id_code) = 16
-
-select noaa_id, count(*) from {{ ref('stg_noaa__catches') }} group by noaa_id having count(*) = 1 and len(noaa_id) = 16
-select noaa_id, count(*) from {{ ref('stg_noaa__sizes') }} group by noaa_id having count(*) = 1 and len(noaa_id) = 16
-select noaa_id, count(*) from {{ ref('stg_noaa__trips') }} group by noaa_id having count(*) = 1 and len(noaa_id) = 16
+select count(*) from {{ ref('stg_noaa__catches') }}
+select count(*) from {{ ref('stg_noaa__sizes') }}
+select count(*) from {{ ref('stg_noaa__trips') }}
+select count(*) from {{ ref('int_noaa_all_join') }}
 
 select * from {{ ref('stg_noaa__catches') }}
 select * from {{ ref('stg_noaa__sizes') }}
 select * from {{ ref('stg_noaa__trips') }}
+select * from {{ ref('int_noaa_all_join') }}
+
+select column_name from information_schema.columns where table_name = 'stg_noaa__catches'
+select column_name from information_schema.columns where table_name = 'stg_noaa__sizes'
+select column_name from information_schema.columns where table_name = 'stg_noaa__trips'
+
+select column_name from information_schema.columns where table_name = 'int_noaa_all_join'

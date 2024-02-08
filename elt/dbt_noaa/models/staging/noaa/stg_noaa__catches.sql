@@ -7,12 +7,21 @@ with source as (
 renamed as (
 
     select
-        cast(id_code as bigint) as noaa_id,
+        cast(id_code as bigint) as fishing_trip_id,
         cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
         cast(substring(id_code, 6, 4) as int) as trip_year,
         cast(substring(id_code, 10, 2) as int) trip_month_num,
         cast(substring(id_code, 12, 2) as int) as trip_day_num,
-        make_date(trip_year, trip_month_num, trip_day_num) as trip_date,
+        case
+            when 
+            trip_month_num in (1,3,5,7,8,10,12) and trip_day_num <= 31
+            or
+            trip_month_num in (4,6,9,11) and trip_day_num <= 30
+            or
+            trip_month_num = 2 and trip_day_num <= 29
+            then make_date(trip_year, trip_month_num, trip_day_num) 
+            else NULL
+        end as trip_date,
         dayname(trip_date) as trip_day_of_week,
         monthname(trip_date) as trip_month_name,
         case
@@ -31,10 +40,9 @@ renamed as (
             when wave = 6 then 'November/December'
             else NULL
         end as sampling_period,
-        year as survey_year,
         case 
-            when kod = 'wd' then 0
-            when kod = 'we' then 1
+            when kod = 'wd' then false
+            when kod = 'we' then true
             else NULL
         end as weekend,
         case 
@@ -64,20 +72,20 @@ renamed as (
             when mode_fx = 7 then 'Private/Rental Boat'
             else NULL
         end as fishing_method_collapsed,
-        st AS state_code_where_caught,
-        claim as num_fish_harvested_observed_adjusted,
-        claim_unadj as num_fish_harvested_observed_unadjusted,
-        harvest as num_fish_harvested_unobserved_adjusted,
-        harvest_unadj as num_fish_harvested_unobserved_unadjusted,
-        release as num_fish_released_adjusted,
-        release_unadj as num_fish_released_unadjusted,
-        tot_cat as total_number_fish_caught,
-        tot_len_a as total_length_fish_harvested_observed_mm,
-        tot_len_b1 as total_length_fish_harvested_unobserved_mm,
-        tot_len as total_length_fish_harvested_mm,
-        wgt_a as total_weight_fish_harvested_observed_kg,
-        wgt_b1 as total_weight_fish_harvested_unobserved_kg,
-        wgt_ab1 as total_weight_fish_harvested_kg,  
+        cast(st as int) as state_code_where_caught,
+        cast(ceiling(cast(claim as float)) as int) as num_fish_harvested_observed_adjusted,
+        cast(ceiling(cast(claim_unadj as float)) as int) as num_fish_harvested_observed_unadjusted,
+        cast(ceiling(cast(harvest as float)) as int) as num_fish_harvested_unobserved_adjusted,
+        cast(ceiling(cast(harvest_unadj as float)) as int) as num_fish_harvested_unobserved_unadjusted,
+        cast(ceiling(cast(release as float)) as int) as num_fish_released_adjusted,
+        cast(ceiling(cast(release_unadj as float)) as int) as num_fish_released_unadjusted,
+        cast(ceiling(cast(tot_cat as float)) as int) as total_number_fish_caught,
+        round(cast(tot_len_a as double), 2) as total_length_fish_harvested_observed_mm,
+        round(cast(tot_len_b1 as double), 2) as total_length_fish_harvested_unobserved_mm,
+        round(cast(tot_len as double), 2) as total_length_fish_harvested_mm,
+        round(cast(wgt_a as double), 2) as total_weight_fish_harvested_observed_kg,
+        round(cast(wgt_b1 as double), 2) as total_weight_fish_harvested_unobserved_kg,
+        round(cast(wgt_ab1 as double), 2) as total_weight_fish_harvested_kg,  
         
     from source
 

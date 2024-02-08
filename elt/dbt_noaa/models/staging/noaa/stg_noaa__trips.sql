@@ -7,12 +7,21 @@ with source as (
 renamed as (
 
     select
-        cast(id_code as bigint) as noaa_id,
+        cast(id_code as bigint) as fishing_trip_id,
         cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
         cast(substring(id_code, 6, 4) as int) as trip_year,
         cast(substring(id_code, 10, 2) as int) trip_month_num,
         cast(substring(id_code, 12, 2) as int) as trip_day_num,
-        make_date(trip_year, trip_month_num, trip_day_num) as trip_date,
+        case
+            when 
+            trip_month_num in (1,3,5,7,8,10,12) and trip_day_num <= 31
+            or
+            trip_month_num in (4,6,9,11) and trip_day_num <= 30
+            or
+            trip_month_num = 2 and trip_day_num <= 29
+            then make_date(trip_year, trip_month_num, trip_day_num) 
+            else NULL
+        end as trip_date,
         dayname(trip_date) as trip_day_of_week,
         monthname(trip_date) as trip_month_name,
         case
@@ -31,28 +40,11 @@ renamed as (
             when wave = 6 then 'November/December'
             else NULL
         end as sampling_period,
-        year as survey_year,
         case 
-            when kod = 'wd' then 0
-            when kod = 'we' then 1
+            when kod = 'wd' then false
+            when kod = 'we' then true
             else NULL
         end as weekend,
-        case
-            when 
-            cast(left(time, 2) as int) between 1 and 23
-            and 
-            cast(right(time, 2) as int) between 1 and 59
-            then make_time(cast(left(time, 2) as int), cast(right(time, 2) as int), 0.0)
-            else NULL
-        end as fish_caught_time,
-        make_timestamp(trip_year, trip_month_num, trip_day_num, date_part('hour', fish_caught_time), date_part('minute', fish_caught_time), date_part('second', fish_caught_time)) as fish_caught_datetime,
-        case
-            when date_part('hour', fish_caught_time) between 0 and 5 then 'Before Dawn'
-            when date_part('hour', fish_caught_time) between 6 and 11 then 'Morning'
-            when date_part('hour', fish_caught_time) between 12 and 17 then 'Afternoon'
-            when date_part('hour', fish_caught_time) between 18 and 23 then 'After Dusk'
-            else NULL
-        end as fish_caught_time_of_day,
         case 
             when sub_reg = 4 then 'North Atlantic (ME; NH; MA; RI; CT)'
             when sub_reg = 5 then 'Mid-Atlantic (NY; NJ; DE; MD; VA) '
@@ -80,6 +72,18 @@ renamed as (
             when mode_fx = 7 then 'Private/Rental Boat'
             else NULL
         end as fishing_method_collapsed,
+        lpad(st, 2, '0') as state_code_where_caught,
+        lpad(cnty, 3, '0') as county_code_where_caught,
+        concat(state_code_where_caught, county_code_where_caught) as fips_code_where_caught,
+        lpad(st_res, 2, '0') as state_code_where_fisherman_resides,
+        lpad(cnty_res, 3, '0') as county_code_where_fisherman_resides,
+        concat(state_code_where_fisherman_resides, county_code_where_fisherman_resides) as fips_code_where_fisherman_resides,
+        case
+            when coastal = 'N' then 'Non-coastal county resident'
+            when coastal = 'Y' then 'Coastal county resident'
+            when coastal = 'O' then 'Out-of-State'
+            else NULL
+        end as fisherman_state_residency_status,
         case
             when mode_f = 1 then 'Pier/Dock'
             when mode_f = 2 then 'Jetty/Breakwater/Breachway'
@@ -91,25 +95,31 @@ renamed as (
             when mode_f = 8 then 'Private/Rental Boat'
             else NULL
         end as fishing_method_uncollapsed,
+        cast(ffdays12 as int) as number_of_outings_in_last_year,
+        cast(ffdays2 as int) as number_of_outings_in_last_2_months,
+        cast(cntrbtrs as int) as number_of_anglers_interviewed,
+        round(cast(hrsf as double), 2) as trip_fishing_effort_hours,
         case
-            when coastal = 'N' then 'Non-coastal county resident'
-            when coastal = 'Y' then 'Coastal county resident'
-            when coastal = 'O' then 'Out-of-State'
+            when catch = 1 or catch = 3 then true
+            when catch = 2 then false
             else NULL
-        end as fisherman_state_residency_status,
-        st AS state_code_where_caught,
-        st_res as state_code_where_fisherman_resides,
-        cnty as county_code_where_caught,
-        cnty_res as county_code_where_fisherman_resides,
-        ffdays12 as number_of_outings_in_last_year,
-        ffdays2 as number_of_outings_in_last_2_months,
-        cntrbtrs as number_of_anglers_interviewed,
-        hrsf as trip_fishing_effort_hours,
+        end as caught,
         case
-            when catch = 1 or catch = 3 then 1
-            when catch = 2 then 0
+            when 
+            cast(left(time, 2) as int) between 1 and 23
+            and 
+            cast(right(time, 2) as int) between 1 and 59
+            then make_time(cast(left(time, 2) as int), cast(right(time, 2) as int), 0.0)
             else NULL
-        end as caught
+        end as fish_caught_time,
+        make_timestamp(trip_year, trip_month_num, trip_day_num, date_part('hour', fish_caught_time), date_part('minute', fish_caught_time), date_part('second', fish_caught_time)) as fish_caught_datetime,
+        case
+            when date_part('hour', fish_caught_time) between 0 and 5 then 'Before Dawn'
+            when date_part('hour', fish_caught_time) between 6 and 11 then 'Morning'
+            when date_part('hour', fish_caught_time) between 12 and 17 then 'Afternoon'
+            when date_part('hour', fish_caught_time) between 18 and 23 then 'After Dusk'
+            else NULL
+        end as fish_caught_time_of_day
 
     from source
 

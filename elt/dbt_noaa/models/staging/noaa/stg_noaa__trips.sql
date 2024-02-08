@@ -7,18 +7,18 @@ with source as (
 renamed as (
 
     select
-        cast(id_code as bigint) as fishing_trip_id,
-        cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
-        cast(substring(id_code, 6, 4) as int) as trip_year,
-        cast(substring(id_code, 10, 2) as int) trip_month_num,
-        cast(substring(id_code, 12, 2) as int) as trip_day_num,
+        try_cast(id_code as bigint) as fishing_trip_id,
+        try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
+        try_cast(substring(id_code, 6, 4) as int) as trip_year,
+        try_cast(substring(id_code, 10, 2) as int) trip_month_num,
+        try_cast(substring(id_code, 12, 2) as int) as trip_day_num,
         case
             when 
-            trip_month_num in (1,3,5,7,8,10,12) and trip_day_num <= 31
+            coalesce(trip_month_num, 0) in (1,3,5,7,8,10,12) and trip_day_num <= 31
             or
-            trip_month_num in (4,6,9,11) and trip_day_num <= 30
+            coalesce(trip_month_num, 0) in (4,6,9,11) and trip_day_num <= 30
             or
-            trip_month_num = 2 and trip_day_num <= 29
+            coalesce(trip_month_num, 0) = 2 and trip_day_num <= 29
             then make_date(trip_year, trip_month_num, trip_day_num) 
             else NULL
         end as trip_date,
@@ -95,10 +95,10 @@ renamed as (
             when mode_f = 8 then 'Private/Rental Boat'
             else NULL
         end as fishing_method_uncollapsed,
-        cast(ffdays12 as int) as number_of_outings_in_last_year,
-        cast(ffdays2 as int) as number_of_outings_in_last_2_months,
-        cast(cntrbtrs as int) as number_of_anglers_interviewed,
-        round(cast(hrsf as double), 2) as trip_fishing_effort_hours,
+        try_cast(ffdays12 as int) as number_of_outings_in_last_year,
+        try_cast(ffdays2 as int) as number_of_outings_in_last_2_months,
+        try_cast(cntrbtrs as int) as number_of_anglers_interviewed,
+        round(try_cast(hrsf as double), 2) as trip_fishing_effort_hours,
         case
             when catch = 1 or catch = 3 then true
             when catch = 2 then false
@@ -106,10 +106,10 @@ renamed as (
         end as caught,
         case
             when 
-            cast(left(time, 2) as int) between 1 and 23
+            try_cast(left(time, 2) as int) between 1 and 23
             and 
-            cast(right(time, 2) as int) between 1 and 59
-            then make_time(cast(left(time, 2) as int), cast(right(time, 2) as int), 0.0)
+            try_cast(right(time, 2) as int) between 1 and 59
+            then make_time(try_cast(left(time, 2) as int), try_cast(right(time, 2) as int), 0.0)
             else NULL
         end as fish_caught_time,
         make_timestamp(trip_year, trip_month_num, trip_day_num, date_part('hour', fish_caught_time), date_part('minute', fish_caught_time), date_part('second', fish_caught_time)) as fish_caught_datetime,

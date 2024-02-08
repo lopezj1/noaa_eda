@@ -7,11 +7,11 @@ with source as (
 renamed as (
 
     select
-        cast(id_code as bigint) as fishing_trip_id,
-        cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
-        cast(substring(id_code, 6, 4) as int) as trip_year,
-        cast(substring(id_code, 10, 2) as int) trip_month_num,
-        cast(substring(id_code, 12, 2) as int) as trip_day_num,
+        try_cast(id_code as bigint) as fishing_trip_id,
+        try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
+        try_cast(substring(id_code, 6, 4) as int) as trip_year,
+        try_cast(substring(id_code, 10, 2) as int) trip_month_num,
+        try_cast(substring(id_code, 12, 2) as int) as trip_day_num,
         case
             when 
             trip_month_num in (1,3,5,7,8,10,12) and trip_day_num <= 31
@@ -72,13 +72,13 @@ renamed as (
             when mode_fx = 7 then 'Private/Rental Boat'
             else NULL
         end as fishing_method_collapsed,
-        cast(st as int) as state_code_where_caught,
-        cast(common as varchar) as species_common_name,
-        round(cast(wgt as double), 2) as fish_weight_kg,
-        cast(wgt_imp as boolean) as imputed_weight,
-        round(cast(l_in_bin as double), 2) as fish_length_in,
-        round(cast(l_cm_bin as double), 2) as fish_length_cm,
-        cast(lngth_imp as boolean) as imputed_length
+        try_cast(st as int) as state_code_where_caught,
+        try_cast(common as varchar) as species_common_name,
+        round(try_cast(wgt as double), 2) as fish_weight_kg,
+        try_cast(wgt_imp as boolean) as imputed_weight,
+        round(try_cast(l_in_bin as double), 2) as fish_length_in,
+        round(try_cast(l_cm_bin as double), 2) as fish_length_cm,
+        try_cast(lngth_imp as boolean) as imputed_length
 
     from source
 

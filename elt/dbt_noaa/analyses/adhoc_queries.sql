@@ -6,7 +6,7 @@ select count(*) from {{ ref('int_noaa_all_join') }}
 
 select * from {{ ref('stg_noaa__catches') }}
 select * from {{ ref('stg_noaa__sizes') }}
-select * from {{ ref('stg_noaa__trips') }}
+select * from {{ ref('stg_noaa__trips') }} where trip_date = '1982-01-30'
 select * from {{ ref('int_noaa_all_join') }}
 
 select column_name from information_schema.columns where table_name = 'stg_noaa__catches'

@@ -90,6 +90,9 @@ sources:
           - name: id_code
             data_type: varchar
             description: ""
+            tests:
+              - unique
+              - not_null
           - name: year
             data_type: varchar
             description: ""
@@ -157,6 +160,9 @@ sources:
           - name: id_code
             data_type: varchar
             description: ""
+            tests:
+              - unique
+              - not_null
           - name: year
             data_type: varchar
             description: ""
@@ -284,6 +290,9 @@ sources:
           - name: id_code
             data_type: varchar
             description: ""
+            tests:
+              - unique
+              - not_null
           - name: num_typ6
             data_type: varchar
             description: ""

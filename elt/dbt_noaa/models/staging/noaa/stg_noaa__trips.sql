@@ -25,10 +25,10 @@ renamed as (
         dayname(trip_date) as trip_day_of_week,
         monthname(trip_date) as trip_month_name,
         case
-            when trip_month_name in ('January', 'February') then 'Winter'
-            when trip_month_name in ('March', 'April', 'May', 'June') then 'Spring'
-            when trip_month_name in ('July', 'August') then 'Summer'
-            when trip_month_name in ('September', 'October', 'November', 'December') then 'Fall'
+            when trip_month_name in ('December', 'January', 'February') then 'Winter'
+            when trip_month_name in ('March', 'April', 'May') then 'Spring'
+            when trip_month_name in ('June', 'July', 'August') then 'Summer'
+            when trip_month_name in ('September', 'October', 'November') then 'Fall'
             else NULL
         end as fishing_season,
         case

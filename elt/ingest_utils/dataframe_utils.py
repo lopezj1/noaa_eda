@@ -38,13 +38,14 @@ def create_polars_df(dataset: str, directory: Path) -> pl.DataFrame:
     print(f'\nData Object Details for {dataset}_polars_df\n')
     print(f'\nShape before cleaning: {df.shape}\n')
     print(df.dtypes)
+    print(df.columns)
     print(f'First row of data: \n {df.head(1)}')
     print(f'Last row of data: \n {df.tail(1)}')
 
     return df
 
 @task()
-def clean_pandas_df(df: pd.DataFrame, null_threshold: float = 0.20) -> pd.DataFrame:
+def clean_pandas_df(df: pd.DataFrame, null_threshold: float = 0.25) -> pd.DataFrame:
     """Clean up pandas dataframe to prep for loading into warehouse"""
     threshold = df.shape[0] * (1 - null_threshold) #require this many non-NA values
     pattern = r'all|area' #remove these erroneous values
@@ -57,17 +58,18 @@ def clean_pandas_df(df: pd.DataFrame, null_threshold: float = 0.20) -> pd.DataFr
     return df
 
 @task()
-def clean_polars_df(df: pl.DataFrame, null_threshold: float = 0.20) -> pl.DataFrame:
+def clean_polars_df(df: pl.DataFrame, null_threshold: float = 0.25) -> pl.DataFrame:
     """Clean up polars dataframe to prep for loading into warehouse"""
     lf = df.lazy()
     # regex_pattern = r'^[0-9]+$'
-    regex_pattern = r'^[0-9]{16}$' #returns true if the string consists of only digits 0-9 and is exactly 16 characters long
+    # regex_pattern = r'^[0-9]{16}$' #returns true if the string consists of only digits 0-9 and is exactly 16 characters long
+    regex_pattern = r'[0-9]{16}' #returns true if the string consists of 16 subsequent characters containing only digits 0-9
     lf_query = (
         lf
         .select(col.name for col in df.null_count() / df.height if col.item() <= null_threshold) 
         .filter(~pl.all_horizontal(pl.all().is_null())) #filter out any rows that contain all null values
         # .filter(pl.col('ID_CODE').str.len_chars() == 16)#only select records where id_code is 16 characters long
-        .filter(pl.col('ID_CODE').str.contains(regex_pattern))#only select records where id_code contains only numeric values
+        .filter(pl.col('ID_CODE').str.contains(regex_pattern))#only select records where id_code contains 16 subsequent numeric values
         .unique(subset='ID_CODE',keep='none') #only select records where id_code is unique 
         
     )
@@ -75,6 +77,7 @@ def clean_polars_df(df: pl.DataFrame, null_threshold: float = 0.20) -> pl.DataFr
     df = lf_query.collect()
     print(f'\nShape after cleaning: {df.shape}\n')
     print(df.dtypes)
+    print(df.columns)
     print(f'First row of data: \n {df.head(1)}')
     print(f'Last row of data: \n {df.tail(1)}')
 

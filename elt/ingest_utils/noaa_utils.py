@@ -1,4 +1,4 @@
-import datetime
+import re
 from pathlib import Path
 import sys
 import requests
@@ -9,6 +9,21 @@ import shutil
 from prefect import flow, task
 
 @task()
+def fix_file_names(file_names: list) -> list:
+    fixed_names = []
+    pattern = r'preliminary'
+
+    for file_name in file_names:
+        match = re.search(pattern, file_name)
+        if match:
+            new_name = re.sub(r'_preliminary.*', '_preliminary_csv.zip', file_name)
+            fixed_names.append(new_name)
+        else:
+            fixed_names.append(file_name)
+            
+    return fixed_names
+
+@flow()
 def fetch_noaa_zip_folders(base_url: str) -> list:
     """Get list of zip folders containing NOAA data"""
     try:
@@ -18,8 +33,11 @@ def fetch_noaa_zip_folders(base_url: str) -> list:
 
     df_list = pd.read_html(html)
     df = df_list[-1]
-    lszip = df[df.Name.str.endswith(".zip", na=False)]["Name"].tolist()
+    lszip = df[df.Name.str.startswith("ps_", na=False)]["Name"].tolist()
+    # lszip = df[df.Name.str.endswith(".zip", na=False)]["Name"].tolist()
+    lszip = fix_file_names(lszip)
 
+    print(f'Zip Folders found: {lszip}')
     return lszip
 
 @task()
@@ -44,7 +62,7 @@ def unzip_noaa_folders(lszip: list, base_url: str) -> dict:
             print(f"Error processing ZIP file {folder_url}: {e}")
 
     dictfile = dict(zip(lsfilename, lsfile))
-
+    print(f'Files found: {dictfile.keys()}')
     return dictfile
 
 @task()
@@ -104,11 +122,13 @@ def extract_noaa_data(base_url: str, directory: Path, start_year: int, end_year:
                 filenames_to_filter.append(filename)
         
         #filter out any filenames that don't meet year criteria
+        print(f'Files filtered: {filenames_to_filter}')
         for filename in filenames_to_filter: 
             del dictfile[filename] 
 
+        print(f'Files downloaded: {dictfile.keys()}')
         if bool(dictfile): #check that dictfile is not empty
-            save_csv_files(dictfile, directory)
+            save_csv_files(dictfile, directory)     
             get_dataset_size
         else:
             print(f'No data available for start year {start_year} and end year {end_year}') #end year is previous calendar year

@@ -25,10 +25,10 @@ renamed as (
         dayname(trip_date) as trip_day_of_week,
         monthname(trip_date) as trip_month_name,
         case
-            when trip_month_name in ('January', 'February') then 'Winter'
-            when trip_month_name in ('March', 'April', 'May', 'June') then 'Spring'
-            when trip_month_name in ('July', 'August') then 'Summer'
-            when trip_month_name in ('September', 'October', 'November', 'December') then 'Fall'
+            when trip_month_name in ('December', 'January', 'February') then 'Winter'
+            when trip_month_name in ('March', 'April', 'May') then 'Spring'
+            when trip_month_name in ('June', 'July', 'August') then 'Summer'
+            when trip_month_name in ('September', 'October', 'November') then 'Fall'
             else NULL
         end as fishing_season,
         case
@@ -75,9 +75,10 @@ renamed as (
         try_cast(st as int) as state_code_where_caught,
         try_cast(common as varchar) as species_common_name,
         round(try_cast(wgt as double), 2) as fish_weight_kg,
+        round(fish_weight_kg * 2.20462) as fish_weight_lbs,
         try_cast(wgt_imp as boolean) as imputed_weight,
+        round(try_cast(l_cm_bin as double), 2) as fish_length_cm,        
         round(try_cast(l_in_bin as double), 2) as fish_length_in,
-        round(try_cast(l_cm_bin as double), 2) as fish_length_cm,
         try_cast(lngth_imp as boolean) as imputed_length
 
     from source

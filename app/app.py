@@ -24,7 +24,14 @@ conn = st.connection("duckdb", type=DuckDBConnection, database=DUCKDB_PATH)
 st.title(':blue[NOAA Recreational Fishing Survey]')
 st.divider()
 
-df = conn.query(f"select min(trip_year), max(trip_year), count(*) from {SCHEMA}.stg_noaa__trips")
+df = conn.query(f"""select 
+                min(trip_year), 
+                max(trip_year), 
+                count(*) 
+                from {SCHEMA}.trip_details
+                --where species_common_name in 
+                --(select species_common_name from {SCHEMA}.top_species)
+                """)
 start_year = df.iat[0,0]
 end_year = df.iat[0,1]
 total_trips = df.iat[0,2]
@@ -94,8 +101,9 @@ with tab2:
         col1, col2, col3 = st.columns(3)
         with col1:
             x_axis_value = st.selectbox(label='Select X Axis',
-                                        index=1,
-                                        options=['fish_weight_kg', 
+                                        index=2,
+                                        options=['fish_weight_lbs',
+                                                'fish_weight_kg', 
                                                 'fish_length_in',
                                                 'fish_length_cm',
                                                 'trip_fishing_effort_hours',
@@ -105,7 +113,8 @@ with tab2:
         with col2:
             y_axis_value = st.selectbox(label='Select Y Axis',
                                         index=0,
-                                        options=['fish_weight_kg', 
+                                        options=['fish_weight_lbs',
+                                                'fish_weight_kg', 
                                                 'fish_length_in',
                                                 'fish_length_cm',
                                                 'trip_fishing_effort_hours',

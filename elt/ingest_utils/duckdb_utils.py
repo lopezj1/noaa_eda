@@ -14,7 +14,7 @@ def create_table_query(dataset: str) -> str:
             USE noaa_dw.raw;
             CREATE OR REPLACE TABLE {dataset} AS
             SELECT * FROM 'data_object';
-            CREATE UNIQUE INDEX pk_noaa_{dataset} ON raw.{dataset} (ID_CODE)
+            --CREATE UNIQUE INDEX pk_noaa_{dataset} ON raw.{dataset} (ID_CODE)
             """
 
     return query_string

@@ -19,7 +19,7 @@ trips as (
 trip_details as (
         
         select
-        t.fishing_trip_id,
+        t.survey_id,
         t.data_publish_date,
         t.fish_caught_time,
         t.fish_caught_datetime,
@@ -67,8 +67,8 @@ trip_details as (
         c.total_weight_fish_harvested_unobserved_kg,
         c.total_weight_fish_harvested_kg
         from trips t
-        left join catches c on c.fishing_trip_id = t.fishing_trip_id
-        left join sizes s on s.fishing_trip_id = t.fishing_trip_id
+        left join catches c on c.survey_id = t.survey_id
+        left join sizes s on s.survey_id = t.survey_id
 
 )
 

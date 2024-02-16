@@ -7,8 +7,10 @@ with source as (
 renamed as (
 
     select
-        try_cast(id_code as bigint) as fishing_trip_id,
+        {{ dbt_utils.generate_surrogate_key(['id_code', 'year']) }} as trip_id,
+        try_cast(id_code as bigint) as survey_id,
         try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
+        try_cast(year as int) as survey_year,
         try_cast(substring(id_code, 6, 4) as int) as trip_year,
         try_cast(substring(id_code, 10, 2) as int) trip_month_num,
         try_cast(substring(id_code, 12, 2) as int) as trip_day_num,
@@ -131,4 +133,9 @@ renamed as (
 
 )
 
-select * from renamed
+{{ dbt_utils.snowflake__deduplicate(
+    relation='renamed',
+    partition_by='survey_id',
+    order_by='survey_year desc',
+   )
+}}

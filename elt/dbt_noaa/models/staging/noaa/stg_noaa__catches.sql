@@ -7,8 +7,16 @@ with source as (
 renamed as (
 
     select
-        try_cast(id_code as bigint) as fishing_trip_id,
+        {{ dbt_utils.generate_surrogate_key([
+                                            'id_code',
+                                            'common',
+                                            'tot_cat',
+                                            'tot_len',
+                                            'year'
+                                            ]) }} as catch_id,
+        try_cast(id_code as bigint) as survey_id,
         try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
+        try_cast(year as int) as survey_year,
         try_cast(substring(id_code, 6, 4) as int) as trip_year,
         try_cast(substring(id_code, 10, 2) as int) trip_month_num,
         try_cast(substring(id_code, 12, 2) as int) as trip_day_num,
@@ -73,6 +81,7 @@ renamed as (
             else NULL
         end as fishing_method_collapsed,
         try_cast(st as int) as state_code_where_caught,
+        try_cast(common as varchar) as species_common_name,
         try_cast(ceiling(try_cast(claim as float)) as int) as num_fish_harvested_observed_adjusted,
         try_cast(ceiling(try_cast(claim_unadj as float)) as int) as num_fish_harvested_observed_unadjusted,
         try_cast(ceiling(try_cast(harvest as float)) as int) as num_fish_harvested_unobserved_adjusted,
@@ -91,4 +100,9 @@ renamed as (
 
 )
 
-select * from renamed
+{{ dbt_utils.snowflake__deduplicate(
+    relation='renamed',
+    partition_by='survey_id, species_common_name, total_number_fish_caught, total_length_fish_harvested_mm, survey_year',
+    order_by='survey_year desc',
+   )
+}}

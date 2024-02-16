@@ -62,15 +62,17 @@ def clean_polars_df(df: pl.DataFrame, null_threshold: float = 0.25) -> pl.DataFr
     """Clean up polars dataframe to prep for loading into warehouse"""
     lf = df.lazy()
     # regex_pattern = r'^[0-9]+$'
-    # regex_pattern = r'^[0-9]{16}$' #returns true if the string consists of only digits 0-9 and is exactly 16 characters long
-    regex_pattern = r'[0-9]{16}' #returns true if the string consists of 16 subsequent characters containing only digits 0-9
+    # regex_pattern = r'^[0-9]{16}$' #returns true if matches strings that consist entirely of exactly 16 digits
+    regex_pattern = r'[0-9]{16}' #returns true if matches any sequence of 16 digits within a string
     lf_query = (
         lf
         .select(col.name for col in df.null_count() / df.height if col.item() <= null_threshold) 
         .filter(~pl.all_horizontal(pl.all().is_null())) #filter out any rows that contain all null values
         # .filter(pl.col('ID_CODE').str.len_chars() == 16)#only select records where id_code is 16 characters long
         .filter(pl.col('ID_CODE').str.contains(regex_pattern))#only select records where id_code contains 16 subsequent numeric values
-        .unique(subset='ID_CODE',keep='none') #only select records where id_code is unique 
+        .with_columns(pl.col('ID_CODE').str.replace(r'[^0-9]', '')) #remove any non digit characters from string
+        # .unique(subset='ID_CODE',keep='none') #only select records where id_code is unique 
+        # .unique(subset='ID_CODE',keep='any') #only select records where id_code is unique 
         
     )
     print(f'\nlazy execution plan:\n{lf_query.explain()}')

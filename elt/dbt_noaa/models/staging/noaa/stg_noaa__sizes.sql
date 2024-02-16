@@ -7,8 +7,16 @@ with source as (
 renamed as (
 
     select
-        try_cast(id_code as bigint) as fishing_trip_id,
+        {{ dbt_utils.generate_surrogate_key([
+                                            'id_code',
+                                            'common',
+                                            'wgt',
+                                            'lngth',
+                                            'year'
+                                            ]) }} as size_id,
+        try_cast(id_code as bigint) as survey_id,
         try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
+        try_cast(year as int) as survey_year,
         try_cast(substring(id_code, 6, 4) as int) as trip_year,
         try_cast(substring(id_code, 10, 2) as int) trip_month_num,
         try_cast(substring(id_code, 12, 2) as int) as trip_day_num,
@@ -77,6 +85,7 @@ renamed as (
         round(try_cast(wgt as double), 2) as fish_weight_kg,
         round(fish_weight_kg * 2.20462) as fish_weight_lbs,
         try_cast(wgt_imp as boolean) as imputed_weight,
+        round(try_cast(lngth as double), 2) as fish_length_mm,        
         round(try_cast(l_cm_bin as double), 2) as fish_length_cm,        
         round(try_cast(l_in_bin as double), 2) as fish_length_in,
         try_cast(lngth_imp as boolean) as imputed_length

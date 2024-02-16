@@ -19,7 +19,7 @@ county_fips_codes as (
 trips_fips_joined as (
 
         select
-        t.fishing_trip_id,
+        t.survey_id,
         t.data_publish_date,
         t.trip_year,
         t.trip_month_num,

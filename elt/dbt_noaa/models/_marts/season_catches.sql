@@ -24,7 +24,7 @@ joined as (
         s.species_common_name,
         try_cast(t.caught as int) as caught
         from trips t
-        left join sizes s on s.fishing_trip_id = t.fishing_trip_id
+        left join sizes s on s.survey_id = t.survey_id
         where 
         t.fishing_season is not null
         and

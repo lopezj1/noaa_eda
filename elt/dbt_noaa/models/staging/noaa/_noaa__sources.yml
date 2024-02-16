@@ -2,14 +2,17 @@ version: 2
 
 sources:
   - name: raw
-    description: ""    
-    database: noaa_dw  
-    schema: raw        
+    description: ""
+    database: noaa_dw
+    schema: raw
     tables:
-      - name: catch    
+      - name: catch
         description: ""
-        columns:       
+        columns:
           - name: date_published
+            data_type: varchar
+            description: ""
+          - name: common
             data_type: varchar
             description: ""
           - name: strat_id
@@ -90,9 +93,6 @@ sources:
           - name: id_code
             data_type: varchar
             description: ""
-            tests:
-              - unique
-              - not_null
           - name: year
             data_type: varchar
             description: ""
@@ -130,6 +130,9 @@ sources:
           - name: kod
             data_type: varchar
             description: ""
+          - name: sp_code
+            data_type: varchar
+            description: ""
           - name: lngth
             data_type: varchar
             description: ""
@@ -160,9 +163,6 @@ sources:
           - name: id_code
             data_type: varchar
             description: ""
-            tests:
-              - unique
-              - not_null
           - name: year
             data_type: varchar
             description: ""
@@ -254,6 +254,9 @@ sources:
           - name: fl_reg
             data_type: varchar
             description: ""
+          - name: date1
+            data_type: varchar
+            description: ""
           - name: dist
             data_type: varchar
             description: ""
@@ -290,9 +293,6 @@ sources:
           - name: id_code
             data_type: varchar
             description: ""
-            tests:
-              - unique
-              - not_null
           - name: num_typ6
             data_type: varchar
             description: ""

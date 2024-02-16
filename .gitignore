@@ -1,8 +1,9 @@
+/logs
 /duckdb
-/dbt/logs
-/dbt/noaa_data/target
-/dbt/noaa_data/dbt_packages
-/dbt/noaa_data/logs
+# /dbt/logs
+# /dbt/noaa_data/target
+# /dbt/noaa_data/dbt_packages
+# /dbt/noaa_data/logs
 /tmp
 __pycache__
 .prefectignore

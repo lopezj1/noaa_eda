@@ -3,6 +3,31 @@ select count(*) from {{ source('raw', 'catch') }}
 select count(*) from {{ source('raw', 'size') }}
 select count(*) from {{ source('raw', 'trip') }}
 
+--inspect records with duplicate id_code
+with catch as (select * from {{ source('raw', 'catch') }})
+select 
+--count(*)
+ID_CODE, WAVE, strat_id, date_published, AREA_X, kod, SUB_REG, ST, psu_id, MODE_FX, YEAR, *
+from catch
+where ID_CODE IN (select id_code from catch group by id_code having count(*) > 1)
+order by id_code desc
+
+with catch as (select * from {{ source('raw', 'size') }})
+select 
+--count(*)
+ID_CODE, WAVE, strat_id, date_published, AREA_X, kod, SUB_REG, ST, psu_id, MODE_FX, YEAR, *
+from catch
+where ID_CODE IN (select id_code from catch group by id_code having count(*) > 1)
+order by id_code desc
+
+with catch as (select * from {{ source('raw', 'trip') }})
+select 
+--count(*)
+ID_CODE, WAVE, strat_id, date_published, AREA_X, kod, SUB_REG, ST, psu_id, MODE_FX, YEAR, *
+from catch
+where ID_CODE IN (select id_code from catch group by id_code having count(*) > 1)
+order by id_code desc
+
 --get number of records in staging models
 select count(*) from {{ ref('stg_noaa__catches') }}
 select count(*) from {{ ref('stg_noaa__sizes') }}

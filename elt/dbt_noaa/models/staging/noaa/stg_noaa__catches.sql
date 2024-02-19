@@ -1,6 +1,36 @@
+{% set relation = source('raw', 'catch') %}
+{% set null_proportion = 0.60 %}
+{% set id_column = 'id_code' %}
+{% set match_pattern = '[0-9]{16}' %}
+{% set replace_pattern = '[^0-9]' %}
+
 with source as (
 
-    select * from {{ source('raw', 'catch') }}
+    select * from {{ source('raw', 'size') }}
+
+),
+
+---this works but doesn't use cte
+drop_cols as (
+
+    select
+    {{ dbt_utils.star(from=relation, except=drop_cols_high_nulls(relation, null_proportion)) }}
+    from {{ relation }}
+
+),
+
+---prefer this works to use cte
+drop_cols1 as (
+
+    select
+    {{ dbt_utils.star(from=source, except=drop_cols_high_nulls(source, null_proportion)) }}
+    from source
+
+),
+
+valid_records as (
+
+    {{ filter_id_code('drop_cols1', id_column, match_pattern, replace_pattern) }}
 
 ),
 
@@ -96,7 +126,7 @@ renamed as (
         round(try_cast(wgt_b1 as double), 2) as total_weight_fish_harvested_unobserved_kg,
         round(try_cast(wgt_ab1 as double), 2) as total_weight_fish_harvested_kg,  
         
-    from source
+    from valid_records
 
 )
 

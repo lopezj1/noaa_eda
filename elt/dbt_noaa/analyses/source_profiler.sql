@@ -4,7 +4,6 @@
 {% set match_pattern = '[0-9]{16}' %}
 {% set replace_pattern = '[^0-9]' %}
 
-
 with drop_cols as (
     -- drop cols with high null proportion
     select

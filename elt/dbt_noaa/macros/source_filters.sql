@@ -1,7 +1,14 @@
 {% macro drop_cols_high_nulls(relation, null_proportion=0.70) %}
 
+{{ log(relation, info=True) }}
+{{ log(null_proportion, info=True) }}
+
 {% set query %}
-with profile as ({{ dbt_profiler.get_profile(relation=relation) }})
+with profile as (
+    
+    {{ dbt_profiler.get_profile(relation=relation) }}
+    
+)
 
 select column_name from profile 
 where not_null_proportion < {{ null_proportion }}

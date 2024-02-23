@@ -34,7 +34,7 @@ An end-to-end data product will be built consisting of extracting, loading, and 
 ![Alt text](images/noaa_project_data_flow_diagram.jpg)
 
 ### Extract & Load (EL)
-Survey data, in the form of csv files, is contained in zip folders by year and wave (if multiple survey were taken that year).  Python script **ingest.py** will handle the extract and load (EL) of the data.  The EL pipeline consists of the following general steps:
+Survey data, in the form of csv files, is contained in zip folders by year and wave (if multiple survey were taken that year).  Python script **ingest_noaa.py** will handle the extract and load (EL) of the data.  The EL pipeline consists of the following general steps:
 
 1. GET request to retrieve folders named by year and wave
 2. Unzip folders to extract csv files

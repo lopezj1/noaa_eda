@@ -1,6 +1,6 @@
 {% set src = source('raw', 'catch') %}
-{% set null_proportion = 0.60 %}
-{% set id_column = 'id_code' %}
+{% set null_proportion = 0.75 %}
+{% set id_column = 'id_code_1' %}
 {% set match_pattern = '[0-9]{16}' %}
 {% set replace_pattern = '[^0-9]' %}
 
@@ -21,19 +21,13 @@ valid_records as (
 renamed as (
 
     select
-        {{ dbt_utils.generate_surrogate_key([
-                                            'id_code',
-                                            'common',
-                                            'tot_cat',
-                                            'tot_len',
-                                            'year'
-                                            ]) }} as catch_id,
-        try_cast(id_code as bigint) as survey_id,
+        {{ dbt_utils.generate_surrogate_key(['id_code_1','common','tot_cat','tot_len','year_1']) }} as catch_id,
+        try_cast(id_code_1 as bigint) as survey_id,
         try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
-        try_cast(year as int) as survey_year,
-        try_cast(substring(id_code, 6, 4) as int) as trip_year,
-        try_cast(substring(id_code, 10, 2) as int) trip_month_num,
-        try_cast(substring(id_code, 12, 2) as int) as trip_day_num,
+        try_cast(year_1 as int) as survey_year,
+        try_cast(substring(id_code_1, 6, 4) as int) as trip_year,
+        try_cast(substring(id_code_1, 10, 2) as int) trip_month_num,
+        try_cast(substring(id_code_1, 12, 2) as int) as trip_day_num,
         case
             when 
             coalesce(trip_month_num, 0) in (1,3,5,7,8,10,12) and trip_day_num between 1 and 31
@@ -112,11 +106,17 @@ renamed as (
         
     from valid_records
 
-)
+),
+
+deduplicated as (
 
 {{ dbt_utils.snowflake__deduplicate(
     relation='renamed',
-    partition_by='survey_id, species_common_name, total_number_fish_caught, total_length_fish_harvested_mm, survey_year',
+    partition_by='catch_id',
     order_by='survey_year desc',
    )
 }}
+
+)
+
+select * from deduplicated

@@ -1,4 +1,4 @@
-{% macro drop_cols_high_nulls(relation, null_proportion=0.70) %}
+{% macro drop_cols_high_nulls(relation, null_proportion=0.75) %}
 
 {{ log(relation, info=True) }}
 {{ log(null_proportion, info=True) }}

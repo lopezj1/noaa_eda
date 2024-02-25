@@ -1,14 +1,14 @@
-{% set src = source('raw', 'catch') %}
+{% set relation = ref('base_noaa__catches') %}
 {% set null_proportion = 0.75 %}
-{% set id_column = 'id_code_1' %}
+{% set id_column = 'id_code' %}
 {% set match_pattern = '[0-9]{16}' %}
 {% set replace_pattern = '[^0-9]' %}
 
 with drop_cols as (
 
     select
-    {{ dbt_utils.star(from=src, except=drop_cols_high_nulls(src, null_proportion)) }}
-    from {{ src }}
+    {{ dbt_utils.star(from=relation, except=drop_cols_high_nulls(relation, null_proportion)) }}
+    from {{ relation }}
 
 ),
 
@@ -21,13 +21,13 @@ valid_records as (
 renamed as (
 
     select
-        {{ dbt_utils.generate_surrogate_key(['id_code_1','common','tot_cat','tot_len','year_1']) }} as catch_id,
-        try_cast(id_code_1 as bigint) as survey_id,
+        {{ dbt_utils.generate_surrogate_key(['id_code','common','tot_cat','tot_len','year']) }} as catch_id,
+        try_cast(id_code as bigint) as survey_id,
         try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
-        try_cast(year_1 as int) as survey_year,
-        try_cast(substring(id_code_1, 6, 4) as int) as trip_year,
-        try_cast(substring(id_code_1, 10, 2) as int) trip_month_num,
-        try_cast(substring(id_code_1, 12, 2) as int) as trip_day_num,
+        try_cast(year as int) as survey_year,
+        try_cast(substring(id_code, 6, 4) as int) as trip_year,
+        try_cast(substring(id_code, 10, 2) as int) trip_month_num,
+        try_cast(substring(id_code, 12, 2) as int) as trip_day_num,
         case
             when 
             coalesce(trip_month_num, 0) in (1,3,5,7,8,10,12) and trip_day_num between 1 and 31
@@ -88,7 +88,7 @@ renamed as (
             when mode_fx = '7' then 'Private/Rental Boat'
             else NULL
         end as fishing_method_collapsed,
-        try_cast(st as int) as state_code_where_caught,
+        try_cast(lpad(st, 2, '0') as int) as state_code_where_caught,
         try_cast(common as varchar) as species_common_name,
         try_cast(ceiling(try_cast(claim as float)) as int) as num_fish_harvested_observed_adjusted,
         try_cast(ceiling(try_cast(claim_unadj as float)) as int) as num_fish_harvested_observed_unadjusted,

@@ -1,18 +1,21 @@
 version: 2
 
-sources:
-  - name: raw
-    description: "Raw data from NOAA MRIP csv files"
-    database: noaa_dw
-    schema: raw
-    tables:
-      - name: catch
+models:
+      - name: base_noaa__catches
         description: |
             Represents all catches.
             
             `dbt-profiler` results:
 
-            {{ doc("dbt_profiler_results__raw_catch") }}
+            {{ doc("dbt_profiler_results__analytics_base_noaa__catches") }}
+        tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+                - id_code
+                - common
+                - tot_cat
+                - tot_len
+                - year
         columns:
           - name: date_published
             data_type: varchar
@@ -190,40 +193,12 @@ sources:
                 Should be specified in any survey procedure, using the CATCH datasets, for appropriate point estimate calculation and variance estimations.  
                 ** NOTE: WP_INT is still included in CATCH datasets for backwards compatibility.  
                 WP_CATCH equals WP_INT for all records except those in specific STATE,MODE_FX,YEAR combinations with small sample size issues.
-          - name: id_code_1
-            data_type: varchar
-            description: "Assignment number (1 digit), interviewer code (4 digit), date (YYYYMMDD), Interview number (3 digit)"
-          - name: year_1
-            data_type: varchar
-            description: "Year (4-digit) "
           - name: _type_
             data_type: varchar
             description: ""
           - name: _freq_
             data_type: varchar
             description: ""
-          - name: month_1
-            data_type: varchar
-            description: "Month of intercept (2 digit, with leading 0) 01 - 12"
-          - name: landing_1
-            data_type: varchar
-            description: "The total number of fish removed from the fishery resource.  May be obtained by summing catch types A (CLAIM) and B1 (HARVEST)."
-          - name: var_id_1
-            data_type: varchar
-            description: "Identifies cell for variance estimation, equal to STRAT_ID except in cases of small sample size; should be specified in any survey procedure for appropriate variance estimation"
-          - name: arx_method_1
-            data_type: varchar
-            description: |
-                Grouping of AREA_X values in annual level estimation used to address small sample size issue in specific ST,MODE_FX,YEAR combinations: 
-                area_x = estimation by standard AREA_X values (1, 2, 3, 4, 5);
-                area_x2 = estimation for combined state areas (1,3,5) separate from federal (2,4);
-                area_x3 = estimation for inland (5) separate from combined ocean areas (1,2,3,4);
-                all = estimation from all areas combined
-          - name: alt_flag_1
-            data_type: varchar
-            description: |
-                (0 .) = Sample weights produced from standard 2-month wave level estimation;
-                1 = Sample weights produced from annual level estimation used to address small sample size issue in the specific ST,MODE_FX,YEAR combination;
           - name: region
             data_type: varchar
             description: "Sub-state georgraphic area stratum in which the sampling assignment was conducted"
@@ -236,17 +211,22 @@ sources:
           - name: imp_rec
             data_type: varchar
             description: ""
-          - name: sp_code_1
-            data_type: varchar
-            description: "Species code of fish"
 
-      - name: size
+      - name: base_noaa__sizes
         description: |
             Represents all sizes.
             
             `dbt-profiler` results:
 
-            {{ doc("dbt_profiler_results__raw_size") }}
+            {{ doc("dbt_profiler_results__analytics_base_noaa__sizes") }}
+        tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+                - id_code
+                - common
+                - wgt
+                - lngth
+                - year
         columns:
           - name: wave
             data_type: varchar
@@ -319,16 +299,6 @@ sources:
           - name: id_code
             data_type: varchar
             description: "Assignment number (1 digit), interviewer code (4 digit), date (YYYYMMDD), Interview number (3 digit)"
-          - name: mode_fx_1
-            data_type: varchar
-            description: |
-                Collapsed fishing mode code 
-                    1=Man-Made
-                    2=Beach/Bank
-                    3=Shore
-                    4=Headboat
-                    5=Charter Boat (sub_reg=6 or 7 & mode_f=7)
-                    7=Private/Rental Boat
           - name: area_x
             data_type: varchar
             description: |
@@ -338,29 +308,6 @@ sources:
                     3 = Ocean <= 10 mi (WFL only) 
                     4 = Ocean > 10 mi (WFL only) 
                     5 = Inland
-          - name: st_1
-            data_type: varchar
-            description: "FIPS code for state of intercept"
-          - name: sub_reg_1
-            data_type: varchar
-            description: |
-                 Subregion code for region of trip
-                    4   = North Atlantic (ME; NH; MA; RI; CT) 
-                    5   = Mid-Atlantic (NY; NJ; DE; MD; VA) 
-                    6   = South Atlantic (NC; SC; GA; EFL) 
-                    7   = Gulf of Mexico (WFL; AL; MS; LA) 
-                    8   = West Pacific (HI) 
-                    11 = U. S. Caribbean (Puerto Rico and Virgin Islands
-          - name: wave_1
-            data_type: varchar
-            description: |
-                Two-month sampling period
-                    1 = January/February
-                    2 = March/April
-                    3 = May/June
-                    4 = July/August
-                    5 = September/October
-                    6 = November/December
           - name: month
             data_type: varchar
             description: "Month of intercept (2 digit, with leading 0) 01 - 12"
@@ -370,9 +317,6 @@ sources:
                 Kind of day
                     wd = Weekday
                     we = Weekend
-          - name: sp_code_1
-            data_type: varchar
-            description: "Species code of fish"
           - name: lngth
             data_type: varchar
             description: "Fork length of fish or centerline length for non-forked fish (MM)."
@@ -391,11 +335,6 @@ sources:
                 Weight imputation indicator
                     1 = Yes
                     0 = No
-          - name: strat_id_1
-            data_type: varchar
-            description: |
-                year, wave, sub_reg, st, fl_reg, mode_fx, month, kod
-                Identifier for survey design stratum; should be specified in any survey procedure for appropriate variance estimation
           - name: psu_id
             data_type: varchar
             description: |
@@ -415,25 +354,21 @@ sources:
           - name: l_cm_bin
             data_type: varchar
             description: "Length of fish rounded down to the nearest cm."
-          - name: id_code_1
-            data_type: varchar
-            description: "Assignment number (1 digit), interviewer code (4 digit), date (YYYYMMDD), Interview number (3 digit)"
-          - name: year_1
-            data_type: varchar
-            description: "Year (4-digit) "
-          - name: month_1
-            data_type: varchar
-            description: "Month of intercept (2 digit, with leading 0) 01 - 12"
           - name: imp_rec
             data_type: varchar
             description: ""
-      - name: trip
+      - name: base_noaa__trips
         description: |
             Represents all trips.
             
             `dbt-profiler` results:
 
-            {{ doc("dbt_profiler_results__raw_trip") }}
+            {{ doc("dbt_profiler_results__analytics_base_noaa__trips") }}
+        tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+                - id_code
+                - year
         columns:
           - name: date_published
             data_type: varchar
@@ -802,21 +737,12 @@ sources:
                     1=Yes   
                     2=No 
                     8=not applicable 
-          - name: id_code_1
-            data_type: varchar
-            description: "Assignment number (1 digit), interviewer code (4 digit), date (YYYYMMDD), Interview number (3 digit)"
           - name: num_typ6
             data_type: varchar
             description: "Type 6 record present? (0 = No, 1 = Yes)"
           - name: party
             data_type: varchar
             description: "Number of anglers in fishing party (Boat modes only)"
-          - name: year_1
-            data_type: varchar
-            description: "Year (4-digit) "
-          - name: add_ph_1
-            data_type: varchar
-            description: "Phone # & Name provided for verification (0 = No, 1 = Yes)"
           - name: area_nc
             data_type: varchar
             description: |
@@ -849,9 +775,6 @@ sources:
                     X = Stump Sound 
                     Y = Topsail Sound 
                     Z = Intracoastal Waterway
-          - name: county_1
-            data_type: varchar
-            description: "Name of county of residence"
           - name: mode2001
             data_type: varchar
             description: |
@@ -903,15 +826,6 @@ sources:
           - name: num_typ9
             data_type: varchar
             description: " Number of type 9 records"
-          - name: month_1
-            data_type: varchar
-            description: "Month of intercept (2 digit, with leading 0) 01 - 12"
-          - name: muni_res_1
-            data_type: varchar
-            description: "Municipality or Island of residence."
-          - name: muni_trp_1
-            data_type: varchar
-            description: "Municipality or Island of trip."
           - name: distkeys
             data_type: varchar
             description: |
@@ -921,18 +835,6 @@ sources:
                     3 = <= 10 miles (WFL only) 
                     4 = > 10 miles (WFL only) 
                     8 = not applicable, not reported
-          - name: prim1_1
-            data_type: varchar
-            description: "First target species (see species codes)"
-          - name: prim2_1
-            data_type: varchar
-            description: "Second target species (see species codes)"
-          - name: new_list_1
-            data_type: varchar
-            description: |
-                Is the vessel on/in either VTR or FHS Vessel Directory?
-                    1 = Yes
-                    2 = No
           - name: tsn1
             data_type: varchar
             description: "TSN of primary species sought"
@@ -945,9 +847,6 @@ sources:
                 Interviewer
                     1 = Primary
                     2 = Companion
-          - name: date1_1
-            data_type: varchar
-            description: "Date file was created"
           - name: license
             data_type: varchar
             description: |
@@ -963,41 +862,6 @@ sources:
                     2 = No
                     8 = Don't know
                     9 = Refused
-          - name: area_nc_1
-            data_type: varchar
-            description: |
-                Alpha/numeric codes for water bodies in North Carolina 
-                    1 = Ocean 
-                    6 = Alligator River 
-                    7 = Bay River 
-                    8 = Cape Fear River 
-                    A = Chowan River 
-                    B = Lockwood Folly River 
-                    C = Neuse River 
-                    D = New River 
-                    E = Newport River 
-                    F = North River (Carteret) 
-                    G = North River (Currituck) 
-                    H = Pasquotank River 
-                    J = PerQuimans River 
-                    K = Roanoke River 
-                    L = Shallotte River 
-                    M = Tar-Pamlico River 
-                    N = White Oak River 
-                    P = Albemarle Sound 
-                    Q = Bogue Sound 
-                    R = Core Sound 
-                    S = Croatan Sound 
-                    T = Currituck Sound 
-                    U = Masonboro Sound 
-                    V = Pamlico Sound 
-                    W = Roanoke Sound 
-                    X = Stump Sound 
-                    Y = Topsail Sound 
-                    Z = Intracoastal Waterway
-          - name: age_1
-            data_type: varchar
-            description: "Angler age, 99=Refused"
           - name: art_reef
             data_type: varchar
             description: |
@@ -1071,119 +935,15 @@ sources:
                     1 = Male
                     2 = Female
                     9 = Missing
-          - name: tourn_1
-            data_type: varchar
-            description: |
-                Is there/Did you tournament fishing today?
-                    1 = Yes
-                    2 = No
-                    9 = Don't Know / Refused
-          - name: turtle_1
-            data_type: varchar
-            description: |
-                Did angler see any sea turtles while fishing?
-                    1 = Yes, alive
-                    2 = Yes, dead
-                    3 = No
           - name: hrs_dtd
             data_type: varchar
             description: "Number of hours spent on the boat away from the dock, to the nearest half hour, "
-          - name: tsn1_1
-            data_type: varchar
-            description: "TSN of primary species sought"
-          - name: tsn2_1
-            data_type: varchar
-            description: "TSN of secondary species sought"
-          - name: prt_code_1
-            data_type: varchar
-            description: "ID_Code of first member of fishing party"
-          - name: telefon_1
-            data_type: varchar
-            description: |
-                 Does home have phone? 
-                    1 = Yes 
-                    2 = No 
-                    8 = don't know 
-                    9 = refused
           - name: region
             data_type: varchar
             description: "Sub-state georgraphic area stratum in which the sampling assignment was conducted"
           - name: strat_interval
             data_type: varchar
             description: "6 or 12 hour time interval in which the sampling assignment was conducted"
-          - name: gender_1
-            data_type: varchar
-            description: |
-                Angler gender
-                    1 = Male
-                    2 = Female
-                    9 = Missing
-          - name: art_reef_1
-            data_type: varchar
-            description: |
-                1 = Yes
-                2 = No
-                88 = Don't know
-                98 = Refused
-          - name: reefcode_1
-            data_type: varchar
-            description: |
-                NC Reefs Codes for Artificial Reefs in North Carolina
-                    LOCATION           REEF CODE           REEF NUMBER
-                    Oregon Inlet          02                          AR130
-                                                03                          AR140
-                                                04                          AR145
-                                                05                          AR160
-                    Hatteras Inlet         06                          AR220
-                                                07                          AR225
-                                                08                          AR230
-                    Ocracoke Inlet        09                          AR250
-                                                10                          AR255
-                    Drum Inlet              11                          AR275
-                    Cape Lookout        12                          AR285
-                                                13                          AR300
-                                                14                          AR302
-                                                15                          AR305
-                    Beaufort Inlet        16                          AR315
-                                                17                          AR320
-                                                18                          AR330
-                    Bogue Inlet           19                          AR340
-                                                20                          AR342
-                                                21                          AR345
-                    New River Inlet       22                          AR355
-                    New Topsail Inlet   23                          AR360
-                                                24                          AR362
-                                                25                          AR364
-                                                26                          AR366
-                                                27                          AR368
-                    Masonboro Inlet    28                          AR370
-                                                29                          AR372
-                                                30                          AR376
-                                                31                          AR378
-                                                32                          AR382
-                                                33                          AR386
-                    Cape Fear River    34                          AR420
-                                                35                          AR425
-                                                36                          AR440
-                                                37                          AR445
-                                                38                          AR455
-                                                39                          AR460
-                                                40                          AR465
-                    Estuarine Reefs      41                          AR191
-                                                42                          AR291
-                                                43                          AR292
-                                                44                          AR296
-                                                45                          AR298
-                                                46                          AR392
-                                                47                          AR396
-                    Oyster Sanctuaries 48                          Wanchese
-                                                49                          Deep Bay
-                                                50                          West Bay
-                                                51                          Hoop Pole Cr.
-                    OTHER CODES    01                          NO
-                                                88                          Shore
-                                                98                          Unknown
-                                                99                          Refused
           - name: wp_int_precal
             data_type: varchar
             description: ""

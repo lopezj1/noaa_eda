@@ -1,0 +1,33 @@
+version: 2
+
+macros:
+  - name: drop_cols_high_nulls
+    description: A macro to drop columns that have a high null proportion
+    arguments:
+      - name: relation
+        type: relation (ref or source)
+        description: The name of the relation you want to filter.
+      - name: null_proportion
+        type: float
+        description: Threshold value from 0-1 representing the allowed null proportion.
+  - name: filter_id_code
+    description: A macro to filter out rows where an ID column does not match a regex pattern, then replace the values with a new regex pattern.
+    arguments:
+      - name: relation
+        type: cte name
+        description: The name of the relation you want to filter.
+      - name: id_column
+        type: string
+        description: The name of the column you want to filter on.
+      - name: match_pattern
+        type: string
+        description: Regex pattern used to filter.
+      - name: replace_pattern
+        type: string
+        description: Regex pattern to replace value.
+  - name: merge_duplicate_column_names
+    description: A macro to merge duplicate column names using coalesce function.
+    arguments:
+      - name: relation
+        type: relation (ref or source)
+        description: The name of the relation you want to merge.

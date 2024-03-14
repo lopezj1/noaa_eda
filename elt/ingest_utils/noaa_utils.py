@@ -7,6 +7,7 @@ from io import BytesIO
 from zipfile import ZipFile, is_zipfile
 import shutil
 from prefect import flow, task
+import time
 
 @task()
 def fix_file_names(file_names: list) -> list:
@@ -70,6 +71,7 @@ def save_csv_files(dictfile: dict, directory: Path) -> None:
     """Save csv files to tmp folder"""
     directory.mkdir(parents=True, exist_ok=True)
 
+    start_time = time.time()
     for filename, file in dictfile.items():
         trunc_fn = filename.split(".")[0]
         output_file = directory / f'{trunc_fn}.csv'
@@ -79,6 +81,9 @@ def save_csv_files(dictfile: dict, directory: Path) -> None:
                 outfile.write(file)
         except Exception as e:
             print(f"Error writing CSV file {output_file}: {e}")
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print("Write CSVs to /tmp folder:", execution_time, " seconds")
 
 @task()
 def delete_csv_files(directory: Path) -> None:

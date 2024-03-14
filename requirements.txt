@@ -3,6 +3,7 @@ pandas==2.2.1
 plotly==5.18.0
 polars==0.20.15
 prefect==2.14.17
-pytest==8.1.1
 Requests==2.31.0
 streamlit==1.31.0
+dbt-duckdb==1.7.3
+lxml==5.1.0

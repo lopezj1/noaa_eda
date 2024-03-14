@@ -4,3 +4,5 @@ __pycache__
 elt/transform_dbt/dbt_packages
 elt/transform_dbt/logs
 elt/transform_dbt/target
+.venv
+*duckdb*

@@ -1,0 +1,15 @@
+__pycache__
+.prefectignore
+/tmp
+elt/transform_dbt/logs
+elt/transform_dbt/target
+.venv
+*.duckdb*
+node_modules
+package-lock.json
+package.json
+*logs*
+.gitattributes
+.vscode
+*dbt_packages*
+*.parquet*

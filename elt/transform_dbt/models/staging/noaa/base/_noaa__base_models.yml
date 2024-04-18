@@ -1,0 +1,955 @@
+version: 2
+
+models:
+      - name: base_noaa__catches
+        description: |
+            Represents all catches.
+            
+            `dbt-profiler` results:
+
+            {{ doc("dbt_profiler_results__analytics_base_noaa__catches") }}
+        tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+                - id_code
+                - common
+                - tot_cat
+                - tot_len
+                - year
+        columns:
+          - name: date_published
+            data_type: varchar
+            description: ""
+          - name: common
+            data_type: varchar
+            description: "Common name of species"
+          - name: strat_id
+            data_type: varchar
+            description: |
+                Identifier for survey design stratum; if using revised trip/catch/size datasets (2013-), 
+                STRAT_ID should be replaced with VAR_ID in any survey procedure for appropriate variance estimation
+          - name: psu_id
+            data_type: varchar
+            description: |
+                year, wave, st, region, mode_fx, asg_code
+                Identifier for survey design primary sampling unit; should be specified in any survey procedure for appropriate variance estimation
+          - name: id_code
+            data_type: varchar
+            description: "Assignment number (1 digit), interviewer code (4 digit), date (YYYYMMDD), Interview number (3 digit)"
+          - name: mode_fx
+            data_type: varchar
+            description: |
+                Collapsed fishing mode code 
+                    1=Man-Made
+                    2=Beach/Bank
+                    3=Shore
+                    4=Headboat
+                    5=Charter Boat (sub_reg=6 or 7 & mode_f=7)
+                    7=Private/Rental Boat
+          - name: area_x
+            data_type: varchar
+            description: |
+                 Collapsed area of fishing 
+                    1 = Ocean <= 3 mi (all but WFL) 
+                    2 = Ocean > 3 mi (all but WFL) 
+                    3 = Ocean <= 10 mi (WFL only) 
+                    4 = Ocean > 10 mi (WFL only) 
+                    5 = Inland
+          - name: st
+            data_type: varchar
+            description: "FIPS code for state of intercept"
+          - name: sub_reg
+            data_type: varchar
+            description: |
+                 Subregion code for region of trip
+                    4   = North Atlantic (ME; NH; MA; RI; CT) 
+                    5   = Mid-Atlantic (NY; NJ; DE; MD; VA) 
+                    6   = South Atlantic (NC; SC; GA; EFL) 
+                    7   = Gulf of Mexico (WFL; AL; MS; LA) 
+                    8   = West Pacific (HI) 
+                    11 = U. S. Caribbean (Puerto Rico and Virgin Islands
+          - name: wave
+            data_type: varchar
+            description: |
+                Two-month sampling period
+                    1 = January/February
+                    2 = March/April
+                    3 = May/June
+                    4 = July/August
+                    5 = September/October
+                    6 = November/December
+          - name: year
+            data_type: varchar
+            description: "Year (4-digit) "
+          - name: month
+            data_type: varchar
+            description: "Month of intercept (2 digit, with leading 0) 01 - 12"
+          - name: kod
+            data_type: varchar
+            description: |
+                Kind of day
+                    wd = Weekday
+                    we = Weekend
+          - name: sp_code
+            data_type: varchar
+            description: "Species code of fish"
+          - name: claim
+            data_type: varchar
+            description: |
+                Count of fish that were caught, landed whole, and available for identification to species and enumeration by the interviewer.  
+                These fish were available for weighing and measuring. 
+                
+                Some values have been adjusted to account for (depending on mode of fishing) incomplete shore trips and grouped catch. 
+                Compare to CLAIM_UNADJ to see if counts were adjusted.   
+          - name: release
+            data_type: varchar
+            description: |
+                Number of fish that were caught and released alive.
+                Some values have been adjusted to account for (depending on mode of fishing) incomplete shore trips. 
+                Compare to RELEASE_UNADJ to see if counts were adjusted.
+          - name: harvest
+            data_type: varchar
+            description: |
+                Number of fish that were caught, not released live, but not available in whole form for examination, identification, or enumeration.  
+                They are all dead, and may be filleted, released dead, given away, or used for some other purpose but are not available for identification to species and counting.
+                Some values have been adjusted to account for (depending on mode of fishing) incomplete shore trips. Compare to HARVEST_UNADJ to see if counts were adjusted.
+          - name: claim_unadj
+            data_type: varchar
+            description: |
+                Unadjusted count of fish that were caught, landed whole, and available for identification to species and enumeration by the interviewer.  
+                These fish were available for weighing and measuring.
+          - name: harvest_unadj
+            data_type: varchar
+            description: |
+                Unadjusted number of fish that were caught, not released live, but not available in whole form for examination, identification, or enumeration.  
+                They are all dead, and may be filleted, released dead, given away, or used for some other purpose but are not available for identification to species and counting.
+          - name: release_unadj
+            data_type: varchar
+            description: "Unadjusted number of fish that were caught and released alive."
+          - name: tot_len_a
+            data_type: varchar
+            description: "Total Fork (centerline) length of fish (mm) for all Observed Harvest (CLAIM, A) by species on trip."
+          - name: wgt_a
+            data_type: varchar
+            description: "Total weight (kg) of all Observed Harvest (CLAIM, A) by species on trip."
+          - name: tot_len_b1
+            data_type: varchar
+            description: "Total Fork (centerline) length of fish (mm) for all Reported Harvest (HARVEST, B1) by species on trip."
+          - name: wgt_b1
+            data_type: varchar
+            description: "Total weight (kg) of all Reported Harvest (HARVEST, B1) by species on trip."
+          - name: tot_cat
+            data_type: varchar
+            description: "The number of fish caught but not necessarily brought ashore.  May be obtained by summing catch types A (CLAIM), B1 (HARVEST), and B2 (RELEASE)."
+          - name: wgt_ab1
+            data_type: varchar
+            description: "Total weight (kg) of all fish removed from the fishery resource (LANDING, A+B1) by species on trip."
+          - name: tot_len
+            data_type: varchar
+            description: "Total Fork (centerline) length of fish (mm) for all landings (A+B1) by species on trip."
+          - name: landing
+            data_type: varchar
+            description: "The total number of fish removed from the fishery resource.  May be obtained by summing catch types A (CLAIM) and B1 (HARVEST)."
+          - name: var_id
+            data_type: varchar
+            description: |
+                Identifies cell for variance estimation, equal to STRAT_ID except in cases of small sample size; 
+                should be specified in any survey procedure for appropriate variance estimation
+          - name: arx_method
+            data_type: varchar
+            description: |
+                Grouping of AREA_X values in annual level estimation used to address small sample size issue in specific ST,MODE_FX,YEAR combinations: 
+                area_x = estimation by standard AREA_X values (1, 2, 3, 4, 5);
+                area_x2 = estimation for combined state areas (1,3,5) separate from federal (2,4);
+                area_x3 = estimation for inland (5) separate from combined ocean areas (1,2,3,4);
+                all = estimation from all areas combined
+          - name: alt_flag
+            data_type: varchar
+            description: |
+                (0 .) = Sample weights produced from standard 2-month wave level estimation;
+                1 = Sample weights produced from annual level estimation used to address small sample size issue in the specific ST,MODE_FX,YEAR combination;
+          - name: fl_reg
+            data_type: varchar
+            description: |
+                Florida regions with included counties:
+                1 = BAY, DIXIE, ESCAMBIA, FRANKLIN, GULF, JEFFERSON, OKALOOSA, SANTA ROSA, TAYLOR, WAKULLA, WALTON
+                2 = CHARLOTTE, CITRUS, COLLIER, HERNANDO, HILLSBOROUGH, LEE, LEVY, MANATEE, PASCO, PINELLAS, SARASOTA
+                3 = MONROE
+                4 = BROWARD, DADE, INDIAN RIVER, MARTIN, PALM BEACH ST. LUCIE
+                5 = BREVARD, CLAY, DUVAL, FLAGLER, NASSAU, ST. JOHNS, VOLUSIA
+                8 = N/A
+          - name: wp_catch_precal
+            data_type: varchar
+            description: ""
+          - name: wp_int
+            data_type: varchar
+            description: |
+                Survey design sampling weight for TRIP and CATCH datasets; wp_int should only be used to weight records in TRIP and CATCH datasets.  
+                Should be specified in any survey procedure, using the TRIP or CATCH datasets, for appropriate point estimate calculation and variance estimations.
+          - name: wp_catch
+            data_type: varchar
+            description: |
+                Survey design sampling weight for CATCH datasets; wp_catch should only be used to weight records in CATCH datasets.  
+                Should be specified in any survey procedure, using the CATCH datasets, for appropriate point estimate calculation and variance estimations.  
+                ** NOTE: WP_INT is still included in CATCH datasets for backwards compatibility.  
+                WP_CATCH equals WP_INT for all records except those in specific STATE,MODE_FX,YEAR combinations with small sample size issues.
+          - name: _type_
+            data_type: varchar
+            description: ""
+          - name: _freq_
+            data_type: varchar
+            description: ""
+          - name: region
+            data_type: varchar
+            description: "Sub-state georgraphic area stratum in which the sampling assignment was conducted"
+          - name: strat_interval
+            data_type: varchar
+            description: "6 or 12 hour time interval in which the sampling assignment was conducted"
+          - name: wp_int_precal
+            data_type: varchar
+            description: ""
+          - name: imp_rec
+            data_type: varchar
+            description: ""
+
+      - name: base_noaa__sizes
+        description: |
+            Represents all sizes.
+            
+            `dbt-profiler` results:
+
+            {{ doc("dbt_profiler_results__analytics_base_noaa__sizes") }}
+        tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+                - id_code
+                - common
+                - wgt
+                - lngth
+                - year
+        columns:
+          - name: wave
+            data_type: varchar
+            description: |
+                Two-month sampling period
+                    1 = January/February
+                    2 = March/April
+                    3 = May/June
+                    4 = July/August
+                    5 = September/October
+                    6 = November/December
+          - name: year
+            data_type: varchar
+            description: "Year (4-digit) "
+          - name: st
+            data_type: varchar
+            description: "FIPS code for state of intercept"
+          - name: mode_fx
+            data_type: varchar
+            description: |
+                Collapsed fishing mode code 
+                    1=Man-Made
+                    2=Beach/Bank
+                    3=Shore
+                    4=Headboat
+                    5=Charter Boat (sub_reg=6 or 7 & mode_f=7)
+                    7=Private/Rental Boat
+          - name: sub_reg
+            data_type: varchar
+            description: |
+                 Subregion code for region of trip
+                    4   = North Atlantic (ME; NH; MA; RI; CT) 
+                    5   = Mid-Atlantic (NY; NJ; DE; MD; VA) 
+                    6   = South Atlantic (NC; SC; GA; EFL) 
+                    7   = Gulf of Mexico (WFL; AL; MS; LA) 
+                    8   = West Pacific (HI) 
+                    11 = U. S. Caribbean (Puerto Rico and Virgin Islands
+          - name: sp_code
+            data_type: varchar
+            description: "Species code of fish"
+          - name: common
+            data_type: varchar
+            description: "Common name of species"
+          - name: var_id
+            data_type: varchar
+            description: |
+                Identifies cell for variance estimation, equal to STRAT_ID except in cases of small sample size; 
+                should be specified in any survey procedure for appropriate variance estimation
+          - name: arx_method
+            data_type: varchar
+            description: |
+                Grouping of AREA_X values in annual level estimation used to address small sample size issue in specific ST,MODE_FX,YEAR combinations: 
+                area_x = estimation by standard AREA_X values (1, 2, 3, 4, 5);
+                area_x2 = estimation for combined state areas (1,3,5) separate from federal (2,4);
+                area_x3 = estimation for inland (5) separate from combined ocean areas (1,2,3,4);
+                all = estimation from all areas combined
+          - name: alt_flag
+            data_type: varchar
+            description: |
+                (0 .) = Sample weights produced from standard 2-month wave level estimation;
+                1 = Sample weights produced from annual level estimation used to address small sample size issue in the specific ST,MODE_FX,YEAR combination;
+          - name: strat_id
+            data_type: varchar
+            description: |
+                Identifier for survey design stratum; if using revised trip/catch/size datasets (2013-), 
+                STRAT_ID should be replaced with VAR_ID in any survey procedure for appropriate variance estimation
+          - name: date_published
+            data_type: varchar
+            description: ""
+          - name: id_code
+            data_type: varchar
+            description: "Assignment number (1 digit), interviewer code (4 digit), date (YYYYMMDD), Interview number (3 digit)"
+          - name: area_x
+            data_type: varchar
+            description: |
+                 Collapsed area of fishing 
+                    1 = Ocean <= 3 mi (all but WFL) 
+                    2 = Ocean > 3 mi (all but WFL) 
+                    3 = Ocean <= 10 mi (WFL only) 
+                    4 = Ocean > 10 mi (WFL only) 
+                    5 = Inland
+          - name: month
+            data_type: varchar
+            description: "Month of intercept (2 digit, with leading 0) 01 - 12"
+          - name: kod
+            data_type: varchar
+            description: |
+                Kind of day
+                    wd = Weekday
+                    we = Weekend
+          - name: lngth
+            data_type: varchar
+            description: "Fork length of fish or centerline length for non-forked fish (MM)."
+          - name: wgt
+            data_type: varchar
+            description: "Weight of fish in kg at time of interview (round, wet, or live weight)."
+          - name: lngth_imp
+            data_type: varchar
+            description: |
+                Length imputation indicator
+                    1 = Yes
+                    0 = No
+          - name: wgt_imp
+            data_type: varchar
+            description: |
+                Weight imputation indicator
+                    1 = Yes
+                    0 = No
+          - name: psu_id
+            data_type: varchar
+            description: |
+                year, wave, st, region, mode_fx, asg_code
+                Identifier for survey design primary sampling unit; should be specified in any survey procedure for appropriate variance estimation
+          - name: wgt_unadj
+            data_type: varchar
+            description: ""
+          - name: wp_size
+            data_type: varchar
+            description: |
+                Survey design sampling weight for SIZE dataset; wp_size should not be used to weight records in any other dataset.  
+                Should be specified in any survey procedure, using the SIZE dataset, for appropriate point estimate calculation and variance estimation
+          - name: l_in_bin
+            data_type: varchar
+            description: "Length of fish rounded down to the nearest in."
+          - name: l_cm_bin
+            data_type: varchar
+            description: "Length of fish rounded down to the nearest cm."
+          - name: imp_rec
+            data_type: varchar
+            description: ""
+      - name: base_noaa__trips
+        description: |
+            Represents all trips.
+            
+            `dbt-profiler` results:
+
+            {{ doc("dbt_profiler_results__analytics_base_noaa__trips") }}
+        tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+                - id_code
+                - year
+        columns:
+          - name: date_published
+            data_type: varchar
+            description: ""
+          - name: prim2_common
+            data_type: varchar
+            description: "Common name of second target species"
+          - name: prim1_common
+            data_type: varchar
+            description: "Number of anglers in fishing party (Boat modes only)"
+          - name: strat_id
+            data_type: varchar
+            description: |
+                Identifier for survey design stratum; if using revised trip/catch/size datasets (2013-), 
+                STRAT_ID should be replaced with VAR_ID in any survey procedure for appropriate variance estimation
+          - name: psu_id
+            data_type: varchar
+            description: |
+                year, wave, st, region, mode_fx, asg_code
+                Identifier for survey design primary sampling unit; should be specified in any survey procedure for appropriate variance estimation
+          - name: id_code
+            data_type: varchar
+            description: "Assignment number (1 digit), interviewer code (4 digit), date (YYYYMMDD), Interview number (3 digit)"
+          - name: mode_fx
+            data_type: varchar
+            description: |
+                Collapsed fishing mode code 
+                    1=Man-Made
+                    2=Beach/Bank
+                    3=Shore
+                    4=Headboat
+                    5=Charter Boat (sub_reg=6 or 7 & mode_f=7)
+                    7=Private/Rental Boat
+          - name: mode_f
+            data_type: varchar
+            description: |
+                 Fishing Mode 
+                    1 = Pier, dock 
+                    2 = Jetty, breakwater, breachway 
+                    3 = Bridge, causeway 
+                    4 = Other man-made 
+                    5 = Beach or bank 
+                    6 = Head boat 
+                    7 = Charter boat 
+                    8 = Private/Rental boat
+          - name: area_x
+            data_type: varchar
+            description: |
+                 Collapsed area of fishing 
+                    1 = Ocean <= 3 mi (all but WFL) 
+                    2 = Ocean > 3 mi (all but WFL) 
+                    3 = Ocean <= 10 mi (WFL only) 
+                    4 = Ocean > 10 mi (WFL only) 
+                    5 = Inland
+          - name: area
+            data_type: varchar
+            description: |
+                Uncollapsed area of fishing (alpha codes refer to specific estuaries) 
+                    1 = Open water 
+                    2 = Sound 
+                    3 = River 
+                    4 = Bay 
+                    5 = Other 
+                    A = Narragansett Estuary 
+                    B = Buzzards Bay Estuary 
+                    C = Long Island Estuary 
+                    D = Hudson/Raritan Estuary 
+                    E = Delaware Estuary 
+                    F = Chesapeake Estuary 
+                    G = Albemarle/Pamlico Estuary 
+                    H = Biscayne Estuary 
+                    I  = Whitewater Estuary 
+                    J = Sarasota Estuary 
+                    K = Tampa Estuary 
+                    L = Mobile Estuary 
+                    M = Atchafelaya Estuary 
+                    N = Boqueron Estuary 
+                    O = Guanica Estuary 
+                    P = Guayanilla Estuary 
+                    Q = Humacao Estuary 
+                    R = Jobos Estuary 
+                    S = San Juan Estuary 
+                    T =Tortuguero Estuary 
+                    V = Cape Cod Bay
+          - name: st
+            data_type: varchar
+            description: "FIPS code for state of intercept"
+          - name: cnty
+            data_type: varchar
+            description: "FIPS code for county of intercept"
+          - name: intsite
+            data_type: varchar
+            description: "Four digit numerical code for the site where the interview was conducted."
+          - name: hrsf
+            data_type: varchar
+            description: |
+                Hours fished (to nearest 1/2 hour)
+                    99.8 = don't know
+                    99.9 = refused
+          - name: ffdays12
+            data_type: varchar
+            description: |
+                 Number of days fished in the last year 
+                    998 = don't know 
+                    999 = refused
+          - name: ffdays2
+            data_type: varchar
+            description: |
+                Number of days fished in the last 2 months 
+                    98 = don't know 
+                    99 = refused 
+          - name: cnty_res
+            data_type: varchar
+            description: "FIPS code for county of residence"
+          - name: st_res
+            data_type: varchar
+            description: "FIPS code for state of residence"
+          - name: telefon
+            data_type: varchar
+            description: |
+                 Does home have phone? 
+                    1 = Yes 
+                    2 = No 
+                    8 = don't know 
+                    9 = refused
+          - name: cntrbtrs
+            data_type: varchar
+            description: "Number of contributors to Available catch, 88 = all caught by fisherman or no available catch"
+          - name: num_typ2
+            data_type: varchar
+            description: " Number of type 2 records"
+          - name: num_typ3
+            data_type: varchar
+            description: " Number of type 3 records"
+          - name: num_typ4
+            data_type: varchar
+            description: "Type 4 record present? (0 = No, 1 = Yes)"
+          - name: sub_reg
+            data_type: varchar
+            description: |
+                 Subregion code for region of trip
+                    4   = North Atlantic (ME; NH; MA; RI; CT) 
+                    5   = Mid-Atlantic (NY; NJ; DE; MD; VA) 
+                    6   = South Atlantic (NC; SC; GA; EFL) 
+                    7   = Gulf of Mexico (WFL; AL; MS; LA) 
+                    8   = West Pacific (HI) 
+                    11 = U. S. Caribbean (Puerto Rico and Virgin Islands
+          - name: reg_res
+            data_type: varchar
+            description: |
+                Subregion code for region of residence
+                    4   = North Atlantic (ME; NH; MA; RI; CT) 
+                    5   = Mid-Atlantic (NY; NJ; DE; MD; VA) 
+                    6   = South Atlantic (NC; SC; GA; EFL) 
+                    7   = Gulf of Mexico (WFL; AL; MS; LA) 
+                    8   = West Pacific (HI) 
+                    11 = U. S. Caribbean (Puerto Rico and Virgin Islands
+          - name: wave
+            data_type: varchar
+            description: |
+                Two-month sampling period
+                    1 = January/February
+                    2 = March/April
+                    3 = May/June
+                    4 = July/August
+                    5 = September/October
+                    6 = November/December
+          - name: add_hrs
+            data_type: varchar
+            description: "Additional hours fishing expected (to the nearest 1/2 hr) (incomplete beach/bank trips only)"
+          - name: coastal
+            data_type: varchar
+            description: |
+                Specifies whether an interviewee is a coastal county resident, non-coastal county resident, or is a resident of a state other than the one they are fishing in.
+                    N = Non-coastal county resident
+                    O = Out-of-State
+                    Y = Coastal-county resident
+          - name: catch
+            data_type: varchar
+            description: |
+                Did you catch any fish 
+                    1 = Yes 
+                    2 = No 
+                    3 = Catch on another person's form 
+          - name: year
+            data_type: varchar
+            description: "Year (4-digit) "
+          - name: asg_code
+            data_type: varchar
+            description: "Assignment number (1 digit), interviewer code (4 digit), date (YYYYMMDD)"
+          - name: month
+            data_type: varchar
+            description: "Month of intercept (2 digit, with leading 0) 01 - 12"
+          - name: kod
+            data_type: varchar
+            description: |
+                Kind of day
+                    wd = Weekday
+                    we = Weekend
+          - name: mode_asg
+            data_type: varchar
+            description: |
+                Mode of Assignment
+                (All states EXCEPT NC):
+                1 = SH
+                2 = PC
+                3 = PR
+                5 = CH
+                6 = HB
+                7 = Mixed Boat Mode Sampling: PR or CH interviews (All states 2014 wave 3 - 2015 wave 6)
+                7= Mixed Boat Mode Sampling: PR or CH interviews, Offshore Site Group (West Florida only, 2015 Waves 3-6. *See NOTE (1) for more information.) 
+                7=Offshore site-group samples (West Florida 2016 wave 1 – present; Alabama 2016 – present, waves by request, typically waves 3-5. **See NOTE (2) for more information).
+
+                (NC only):
+                1 = BB
+                3 = PR
+                4 = MM
+                5 = CH
+
+                *Note (1): the Offshore (OS) mode 7 assignments run concurrently with mode_asg=7 Mixed Boat from PR or CH in 2015, waves 3-6.  
+                OS, PR, CH site groups are all exclusive - a site or site-cluster is assigned to only one of the three sub-frame groups for sample selection. 
+                Whatever boat mode is present at site could be interviewed (PR, CH, or OS).
+                **Note (2): In 2016, all sites are assigned to an exclusive mode-site-group: SH, CH, PR, OS such that any site would only be clustered and sampled from one sub-frame list.  
+                This stratification is the same as that used for PR and CH in Mixed Boat sampling from the two exclusive site-groups, but now also keeps SH in an exclusive group. 
+                Whatever mode is present at site could be interviewed (PR, CH, OS, or SH).
+          - name: new_list
+            data_type: varchar
+            description: |
+                Is the vessel on/in either VTR or FHS Vessel Directory?
+                    1 = Yes
+                    2 = No
+          - name: on_list
+            data_type: varchar
+            description: " For-hire boat on FHS Sample Frame for wave (1 = Yes, 2 = No)"
+          - name: prt_code
+            data_type: varchar
+            description: "ID_Code of first member of fishing party"
+          - name: celltype
+            data_type: varchar
+            description: |
+                Type of cell.  Can be used along with add_hrs to identify incomplete trips.
+                    1 = Only complete trips 
+                    2 = Mixed trips          
+                    3 = Only incomplete trips
+                    4 = Trips of unknown nature
+          - name: fshinsp_a
+            data_type: varchar
+            description: "Number of fish available for inspection at time of interview"
+          - name: num_fish_a
+            data_type: varchar
+            description: "Number of fish landed that were NOT available for interviewer inspection."
+          - name: fl_reg
+            data_type: varchar
+            description: |
+                Florida regions with included counties:
+                    1 = BAY, DIXIE, ESCAMBIA, FRANKLIN, GULF, JEFFERSON, OKALOOSA, SANTA ROSA, TAYLOR, WAKULLA, WALTON
+                    2 = CHARLOTTE, CITRUS, COLLIER, HERNANDO, HILLSBOROUGH, LEE, LEVY, MANATEE, PASCO, PINELLAS, SARASOTA
+                    3 = MONROE
+                    4 = BROWARD, DADE, INDIAN RIVER, MARTIN, PALM BEACH ST. LUCIE
+                    5 = BREVARD, CLAY, DUVAL, FLAGLER, NASSAU, ST. JOHNS, VOLUSIA
+                    8 = N/A
+          - name: county
+            data_type: varchar
+            description: "Name of county of residence"
+          - name: add_ph
+            data_type: varchar
+            description: "Phone # & Name provided for verification (0 = No, 1 = Yes)"
+          - name: date1
+            data_type: varchar
+            description: "Date file was created"
+          - name: prim1
+            data_type: varchar
+            description: "First target species (see species codes)"
+          - name: prim2
+            data_type: varchar
+            description: "Second target species (see species codes)"
+          - name: dist
+            data_type: varchar
+            description: |
+                 Distance from shore 
+                    1 = <= 3 miles (all but WFL) 
+                    2 = > 3 miles (all but in WFL) 
+                    3 = <= 10 miles (WFL only) 
+                    4 = > 10 miles (WFL only) 
+                    8 = not applicable
+          - name: zip
+            data_type: varchar
+            description: ""
+          - name: time
+            data_type: varchar
+            description: "Time of intercept, 0 - 2359"
+          - name: gear
+            data_type: varchar
+            description: |
+                    1 = hook & line 
+                    2 = dip net, A-frame net 
+                    3 = cast net 
+                    4 = Gill net 
+                    5 = Seine 
+                    6 = Trawl 
+                    7 = Trap 
+                    8 = Spear 
+                    9 = Hand 
+                    10 = Other 
+                    11= YoYo (Puerto Rico only) 
+                    98 = Unknown 
+                    99 = Refused
+          - name: pvt_res
+            data_type: varchar
+            description: |
+                Live in private residence 
+                    1 = Yes 
+                    2 = Institutional 
+                    8 = don't know 
+                    9 = refused
+          - name: sep_fish
+            data_type: varchar
+            description: |
+                Can group catch be separated?
+                    1 = Yes 
+                    2 = No 
+                    8 = all caught by fisherman or no available catch on this form 
+          - name: age
+            data_type: varchar
+            description: "Angler age, 99=Refused"
+          - name: f_by_p
+            data_type: varchar
+            description: |
+                All fish caught by individual 
+                    1 = Yes 
+                    2 = other contributors 
+                    8 = no available catch on this form
+          - name: wp_int
+            data_type: varchar
+            description: |
+                Survey design sampling weight for TRIP and CATCH datasets; wp_int should only be used to weight records in TRIP and CATCH datasets.  
+                Should be specified in any survey procedure, using the TRIP or CATCH datasets, for appropriate point estimate calculation and variance estimations.
+          - name: var_id
+            data_type: varchar
+            description: |
+                Identifies cell for variance estimation, equal to STRAT_ID except in cases of small sample size; 
+                should be specified in any survey procedure for appropriate variance estimation
+          - name: arx_method
+            data_type: varchar
+            description: |
+                Grouping of AREA_X values in annual level estimation used to address small sample size issue in specific ST,MODE_FX,YEAR combinations: 
+                area_x = estimation by standard AREA_X values (1, 2, 3, 4, 5);
+                area_x2 = estimation for combined state areas (1,3,5) separate from federal (2,4);
+                area_x3 = estimation for inland (5) separate from combined ocean areas (1,2,3,4);
+                all = estimation from all areas combined
+          - name: alt_flag
+            data_type: varchar
+            description: |
+                (0 .) = Sample weights produced from standard 2-month wave level estimation;
+                1 = Sample weights produced from annual level estimation used to address small sample size issue in the specific ST,MODE_FX,YEAR combination;
+          - name: leader
+            data_type: varchar
+            description: "ID_CODE of group catch leader"
+          - name: boat_hrs
+            data_type: varchar
+            description: "Dock-to-dock hours of fishing trip (Boat modes only) (to nearest 1/2 hour), 99.9 = Don’t know or refused "
+          - name: first
+            data_type: varchar
+            description: |
+                First person in party to be interviewed  
+                    1=Yes   
+                    2=No 
+                    8=not applicable 
+          - name: num_typ6
+            data_type: varchar
+            description: "Type 6 record present? (0 = No, 1 = Yes)"
+          - name: party
+            data_type: varchar
+            description: "Number of anglers in fishing party (Boat modes only)"
+          - name: area_nc
+            data_type: varchar
+            description: |
+                Alpha/numeric codes for water bodies in North Carolina 
+                    1 = Ocean 
+                    6 = Alligator River 
+                    7 = Bay River 
+                    8 = Cape Fear River 
+                    A = Chowan River 
+                    B = Lockwood Folly River 
+                    C = Neuse River 
+                    D = New River 
+                    E = Newport River 
+                    F = North River (Carteret) 
+                    G = North River (Currituck) 
+                    H = Pasquotank River 
+                    J = PerQuimans River 
+                    K = Roanoke River 
+                    L = Shallotte River 
+                    M = Tar-Pamlico River 
+                    N = White Oak River 
+                    P = Albemarle Sound 
+                    Q = Bogue Sound 
+                    R = Core Sound 
+                    S = Croatan Sound 
+                    T = Currituck Sound 
+                    U = Masonboro Sound 
+                    V = Pamlico Sound 
+                    W = Roanoke Sound 
+                    X = Stump Sound 
+                    Y = Topsail Sound 
+                    Z = Intracoastal Waterway
+          - name: mode2001
+            data_type: varchar
+            description: |
+                ACCSP fishing mode
+                    0 = Pier
+                    1 = Dock
+                    2 = Jetty, breakwater, breachway
+                    3 = Bridge, causeway
+                    4 = Other man-made
+                    5 = Beach or bank
+                    6 = Head boat
+                    7 = Charter boat
+                    8 = Private boat
+                    9 = Rental boat
+          - name: muni_res
+            data_type: varchar
+            description: "Municipality or Island of residence."
+          - name: muni_trp
+            data_type: varchar
+            description: "Municipality or Island of trip."
+          - name: rig
+            data_type: varchar
+            description: |
+                Did angler fish near a reef?
+                    1 = Yes
+                    2 = No
+                    8 = Don't know
+                    9 = Refused
+          - name: tourn
+            data_type: varchar
+            description: |
+                Is there/Did you tournament fishing today?
+                    1 = Yes
+                    2 = No
+                    9 = Don't Know / Refused
+          - name: turtle
+            data_type: varchar
+            description: |
+                Did angler see any sea turtles while fishing?
+                    1 = Yes, alive
+                    2 = Yes, dead
+                    3 = No
+          - name: date
+            data_type: varchar
+            description: ""
+          - name: res
+            data_type: varchar
+            description: ""
+          - name: num_typ9
+            data_type: varchar
+            description: " Number of type 9 records"
+          - name: distkeys
+            data_type: varchar
+            description: |
+                 Distance from shore 
+                    1 = <= 3 miles (all but WFL) 
+                    2 = > 3 miles (all but in WFL) 
+                    3 = <= 10 miles (WFL only) 
+                    4 = > 10 miles (WFL only) 
+                    8 = not applicable, not reported
+          - name: tsn1
+            data_type: varchar
+            description: "TSN of primary species sought"
+          - name: tsn2
+            data_type: varchar
+            description: "TSN of secondary species sought"
+          - name: compflag
+            data_type: varchar
+            description: |
+                Interviewer
+                    1 = Primary
+                    2 = Companion
+          - name: license
+            data_type: varchar
+            description: |
+                 Do you have a license to harvest saltwater fish in this state? (North Carolina only)  
+                    1 = Yes 
+                    2 = No 
+                    3 = Lifetime License
+          - name: monitor
+            data_type: varchar
+            description: |
+                [If head boat ride-along:] Was this angler monitored for discard (Type 9) catch?
+                    1 = Yes
+                    2 = No
+                    8 = Don't know
+                    9 = Refused
+          - name: art_reef
+            data_type: varchar
+            description: |
+                1 = Yes
+                2 = No
+                88 = Don't know
+                98 = Refused
+          - name: reefcode
+            data_type: varchar
+            description: |
+                NC Reefs Codes for Artificial Reefs in North Carolina
+                    LOCATION           REEF CODE           REEF NUMBER
+                    Oregon Inlet          02                          AR130
+                                                03                          AR140
+                                                04                          AR145
+                                                05                          AR160
+                    Hatteras Inlet         06                          AR220
+                                                07                          AR225
+                                                08                          AR230
+                    Ocracoke Inlet        09                          AR250
+                                                10                          AR255
+                    Drum Inlet              11                          AR275
+                    Cape Lookout        12                          AR285
+                                                13                          AR300
+                                                14                          AR302
+                                                15                          AR305
+                    Beaufort Inlet        16                          AR315
+                                                17                          AR320
+                                                18                          AR330
+                    Bogue Inlet           19                          AR340
+                                                20                          AR342
+                                                21                          AR345
+                    New River Inlet       22                          AR355
+                    New Topsail Inlet   23                          AR360
+                                                24                          AR362
+                                                25                          AR364
+                                                26                          AR366
+                                                27                          AR368
+                    Masonboro Inlet    28                          AR370
+                                                29                          AR372
+                                                30                          AR376
+                                                31                          AR378
+                                                32                          AR382
+                                                33                          AR386
+                    Cape Fear River    34                          AR420
+                                                35                          AR425
+                                                36                          AR440
+                                                37                          AR445
+                                                38                          AR455
+                                                39                          AR460
+                                                40                          AR465
+                    Estuarine Reefs      41                          AR191
+                                                42                          AR291
+                                                43                          AR292
+                                                44                          AR296
+                                                45                          AR298
+                                                46                          AR392
+                                                47                          AR396
+                    Oyster Sanctuaries 48                          Wanchese
+                                                49                          Deep Bay
+                                                50                          West Bay
+                                                51                          Hoop Pole Cr.
+                    OTHER CODES    01                          NO
+                                                88                          Shore
+                                                98                          Unknown
+                                                99                          Refused
+          - name: gender
+            data_type: varchar
+            description: |
+                Angler gender
+                    1 = Male
+                    2 = Female
+                    9 = Missing
+          - name: hrs_dtd
+            data_type: varchar
+            description: "Number of hours spent on the boat away from the dock, to the nearest half hour, "
+          - name: region
+            data_type: varchar
+            description: "Sub-state georgraphic area stratum in which the sampling assignment was conducted"
+          - name: strat_interval
+            data_type: varchar
+            description: "6 or 12 hour time interval in which the sampling assignment was conducted"
+          - name: wp_int_precal
+            data_type: varchar
+            description: ""
+          - name: reef
+            data_type: varchar
+            description: ""
+          - name: imp_rec
+            data_type: varchar
+            description: ""

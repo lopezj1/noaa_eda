@@ -13,12 +13,13 @@ def export_parquet(duckdb_path: str = DUCKDB_PATH, table: str = "analytics.trip_
     print(f'Writing data to parquet file')
 
     """Write table data to parquet file"""
-    query_string = f'SELECT * FROM {table}'
+    query_string = f"""
+                    SET preserve_insertion_order = false;
+                    COPY {table} TO '{PARQUET_PATH}/{table}.parquet' (FORMAT PARQUET);
+                    """
     with duckdb.connect(duckdb_path) as con:
-        r = con.sql(query_string)
-        r.to_parquet(file_name=f'{PARQUET_PATH}/{table}.parquet')
+        con.sql(query_string)
 
 if __name__ == "__main__":
     table = "analytics.trip_details"
     export_parquet(DUCKDB_PATH, table)
-    # dlt_utils.write_duckdb_table_to_parquet(DUCKDB_PATH, table)

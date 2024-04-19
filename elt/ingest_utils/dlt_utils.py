@@ -34,22 +34,3 @@ def load_csv_data_duckdb(dataset: str, directory: Path, schema: str) -> None:
 
         print(csv_file)
         print(load_info)
-
-@flow(log_prints=True)
-def write_duckdb_table_to_parquet(duckdb_path: str, table: str) -> None:
-
-    # Create a dlt pipeline
-    pipeline = dlt.pipeline(
-        pipeline_name = "dlt_write_to_parquet",
-        destination=dlt.destinations.filesystem,
-        progress="log",
-    )
-
-    # Write duckdb table to parquet file
-    write_info = pipeline.run(
-                            df,
-                            write_disposition="append", 
-                            table_name=dataset
-                            )
-
-    print(write_info)

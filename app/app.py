@@ -1,7 +1,8 @@
-from duckdb_connection import DuckDBConnection
+import pandas as pd
 import streamlit as st
-from pathlib import Path
 import plotly.express as px
+from pathlib import Path
+import pyarrow.parquet as pq
 
 #configs
 st.set_page_config(
@@ -13,28 +14,35 @@ st.set_page_config(
     }
 )
 
-#constants
-SCHEMA = 'analytics'
-DUCKDB_PATH = str(Path(__file__).resolve().parent.parent / "noaa_dw.duckdb")
+#constants/home/jlopez/de_projects/noaa_eda/app/data
+DATA_PATH = Path(__file__).resolve().parent / "data"
+print(DATA_PATH)
 
-#connections
-conn = st.connection("duckdb", type=DuckDBConnection, database=DUCKDB_PATH)
+#read parquet files into pandas dataframe
+# df_obt = pd.read_parquet('/home/jlopez/de_projects/noaa_eda/app/data/noaa_obt.parquet', "chunks_[1-2]*", engine="fastparquet")
+parquet_file = pq.ParquetFile(f'{DATA_PATH}/noaa_obt.parquet')
+for i in parquet_file.iter_batches(batch_size=10):
+    print("RecordBatch")
+    print(i.to_pandas())
+
+# df_region = pd.read_parquet(f'{DATA_PATH}/noaa_obt.parquet')
+df_region = pd.read_parquet(f'{DATA_PATH}/noaa_region.parquet')
+df_season = pd.read_parquet(f'{DATA_PATH}/noaa_season.parquet')
+df_method = pd.read_parquet(f'{DATA_PATH}/noaa_method.parquet')
+df_species = pd.read_parquet(f'{DATA_PATH}/noaa_species.parquet')
+
+def format_summary_df(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.rename(columns={"species_common_name": "Species Common Name"})
+    df = df.set_index("Species Common Name")
+    df = df.select_dtypes(exclude=['datetime', 'object']) * 100
 
 #app
 st.title(':blue[NOAA Recreational Fishing Survey]')
 st.divider()
 
-df = conn.query(f"""select 
-                min(trip_year), 
-                max(trip_year), 
-                count(*) 
-                from {SCHEMA}.trip_details
-                --where species_common_name in 
-                --(select species_common_name from {SCHEMA}.top_species)
-                """)
-start_year = df.iat[0,0]
-end_year = df.iat[0,1]
-total_trips = df.iat[0,2]
+start_year = df_obt.trip_year.min()
+end_year = df_obt.trip_year.max()
+total_trips = df_obt.size
 
 col1, col2 = st.columns(2)
 with col1:
@@ -44,35 +52,21 @@ with col2:
 
 tab1, tab2 = st.tabs(["Summary Statistics", "Historical Trends"])
 with tab1:
-    # DRY up df transforms
     with st.expander("Catch Rate for Top 10 Targeted Species by US Region"):
-        df = conn.query(f"select * from {SCHEMA}.region_catches")
-        df = df.rename(columns={"species_common_name": "Species Common Name"})
-        df = df.set_index("Species Common Name")
-        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
-        keys = df.columns.tolist()
+        df = format_summary_df(df_region)
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
     with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Season"):
-        df = conn.query(f"select * from {SCHEMA}.season_catches")
-        df = df.rename(columns={"species_common_name": "Species Common Name"})
-        df = df.set_index("Species Common Name")
-        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
+        df = format_summary_df(df_season)
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
     with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Method", expanded=True):
-        df = conn.query(f"select * from {SCHEMA}.method_catches")
-        df = df.rename(columns={"species_common_name": "Species Common Name"})
-        df = df.set_index("Species Common Name")
-        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
+        df = format_summary_df(df_method)
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
 with tab2:
-    df = conn.query(f"""select * from {SCHEMA}.trip_details 
-                        where species_common_name
-                        in (
-                        select species_common_name from {SCHEMA}.top_species
-                        )""")
+    top_species = df_species.species_common_name.tolist()
+    df = df_obt.query('species_common_name in @top_species')
     df = df.sort_values('trip_date', ascending=True)
 
     with st.expander("Select Filters for Charting"):

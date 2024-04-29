@@ -1,4 +1,5 @@
 import pandas as pd
+import polars as pl
 import streamlit as st
 import plotly.express as px
 from pathlib import Path
@@ -18,18 +19,62 @@ st.set_page_config(
 DATA_PATH = Path(__file__).resolve().parent / "data"
 print(DATA_PATH)
 
-#read parquet files into pandas dataframe
-# df_obt = pd.read_parquet('/home/jlopez/de_projects/noaa_eda/app/data/noaa_obt.parquet', "chunks_[1-2]*", engine="fastparquet")
-parquet_file = pq.ParquetFile(f'{DATA_PATH}/noaa_obt.parquet')
-for i in parquet_file.iter_batches(batch_size=10):
-    print("RecordBatch")
-    print(i.to_pandas())
+#---------------Polars Approach-------------------
+# tweak the streaming engine chunk_size
+# pl.Config.set_streaming_chunk_size(5000*13)
 
-# df_region = pd.read_parquet(f'{DATA_PATH}/noaa_obt.parquet')
-df_region = pd.read_parquet(f'{DATA_PATH}/noaa_region.parquet')
-df_season = pd.read_parquet(f'{DATA_PATH}/noaa_season.parquet')
-df_method = pd.read_parquet(f'{DATA_PATH}/noaa_method.parquet')
-df_species = pd.read_parquet(f'{DATA_PATH}/noaa_species.parquet')
+# df_obt = pl.scan_parquet(f'{DATA_PATH}/analytics.trip_details.parquet'
+#                             ,low_memory=True
+#                             # ,use_pyarrow=True
+#                             # ,memory_map=True
+#                             )
+# print(df_obt.explain())
+# df_obt = df_obt.collect(streaming=True).to_pandas()
+
+#--------------Parquet Method 1--------------------------
+# parquet_file = pq.ParquetFile(f'{DATA_PATH}/analytics.trip_details.parquet')
+# for i in parquet_file.iter_batches(batch_size=10):
+#     print("RecordBatch")
+#     print(i.to_pandas())
+
+#--------------Parquet Method 2--------------------------
+def read_parquet_batches(file_path, batch_size=1000):
+    file = pq.ParquetFile(file_path)
+    num_row_groups = file.num_row_groups
+    print(f'Total Row Groups: {num_row_groups}')
+    
+    current_batch = []
+    total_rows = 0
+
+    for row_group_idx in range(num_row_groups):
+        df = file.read_row_group(row_group_idx).to_pandas()
+        for _, row in df.iterrows():
+            current_batch.append(row)
+            total_rows += 1
+            if total_rows % batch_size == 0:
+                yield pd.DataFrame(current_batch)
+                current_batch = []
+    
+    # Yield the remaining rows if the total number of rows is not divisible by batch_size
+    if current_batch:
+        yield pd.DataFrame(current_batch)
+
+file_path = f'{DATA_PATH}/analytics.trip_details.parquet'
+batch_size = 1000
+
+generator = read_parquet_batches(file_path, batch_size=batch_size)
+for i, batch_data in enumerate(generator):
+    # Process batch_data
+    print(f"Batch {i+1}:")
+    print(batch_data.shape[0])
+    # Your processing logic here
+
+#--------------Dataframes used for Analysis
+# df_obt = pd.concat(dfs, ignore_index=True) #cannot concatenate all at once
+df_region = pd.read_parquet(f'{DATA_PATH}/analytics.region_catches.parquet')
+df_season = pd.read_parquet(f'{DATA_PATH}/analytics.season_catches.parquet')
+df_method = pd.read_parquet(f'{DATA_PATH}/analytics.method_catches.parquet')
+df_species = pd.read_parquet(f'{DATA_PATH}/analytics.top_species.parquet')
 
 def format_summary_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename(columns={"species_common_name": "Species Common Name"})

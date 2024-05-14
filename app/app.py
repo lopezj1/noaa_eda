@@ -1,9 +1,7 @@
-import pandas as pd
-import polars as pl
+from duckdb_connection import DuckDBConnection
 import streamlit as st
-import plotly.express as px
 from pathlib import Path
-import pyarrow.parquet as pq
+import plotly.express as px
 
 #configs
 st.set_page_config(
@@ -15,79 +13,28 @@ st.set_page_config(
     }
 )
 
-#constants/home/jlopez/de_projects/noaa_eda/app/data
-DATA_PATH = Path(__file__).resolve().parent / "data"
-print(DATA_PATH)
+#constants
+SCHEMA = 'analytics'
+DUCKDB_PATH = str(Path(__file__).resolve().parent.parent / "noaa_dw.duckdb")
 
-#---------------Polars Approach-------------------
-# tweak the streaming engine chunk_size
-# pl.Config.set_streaming_chunk_size(5000*13)
-
-# df_obt = pl.scan_parquet(f'{DATA_PATH}/analytics.trip_details.parquet'
-#                             ,low_memory=True
-#                             # ,use_pyarrow=True
-#                             # ,memory_map=True
-#                             )
-# print(df_obt.explain())
-# df_obt = df_obt.collect(streaming=True).to_pandas()
-
-#--------------Parquet Method 1--------------------------
-# parquet_file = pq.ParquetFile(f'{DATA_PATH}/analytics.trip_details.parquet')
-# for i in parquet_file.iter_batches(batch_size=10):
-#     print("RecordBatch")
-#     print(i.to_pandas())
-
-#--------------Parquet Method 2--------------------------
-def read_parquet_batches(file_path, batch_size=1000):
-    file = pq.ParquetFile(file_path)
-    num_row_groups = file.num_row_groups
-    print(f'Total Row Groups: {num_row_groups}')
-    
-    current_batch = []
-    total_rows = 0
-
-    for row_group_idx in range(num_row_groups):
-        df = file.read_row_group(row_group_idx).to_pandas()
-        for _, row in df.iterrows():
-            current_batch.append(row)
-            total_rows += 1
-            if total_rows % batch_size == 0:
-                yield pd.DataFrame(current_batch)
-                current_batch = []
-    
-    # Yield the remaining rows if the total number of rows is not divisible by batch_size
-    if current_batch:
-        yield pd.DataFrame(current_batch)
-
-file_path = f'{DATA_PATH}/analytics.trip_details.parquet'
-batch_size = 1000
-
-generator = read_parquet_batches(file_path, batch_size=batch_size)
-for i, batch_data in enumerate(generator):
-    # Process batch_data
-    print(f"Batch {i+1}:")
-    print(batch_data.shape[0])
-    # Your processing logic here
-
-#--------------Dataframes used for Analysis
-# df_obt = pd.concat(dfs, ignore_index=True) #cannot concatenate all at once
-df_region = pd.read_parquet(f'{DATA_PATH}/analytics.region_catches.parquet')
-df_season = pd.read_parquet(f'{DATA_PATH}/analytics.season_catches.parquet')
-df_method = pd.read_parquet(f'{DATA_PATH}/analytics.method_catches.parquet')
-df_species = pd.read_parquet(f'{DATA_PATH}/analytics.top_species.parquet')
-
-def format_summary_df(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename(columns={"species_common_name": "Species Common Name"})
-    df = df.set_index("Species Common Name")
-    df = df.select_dtypes(exclude=['datetime', 'object']) * 100
+#connections
+conn = st.connection("duckdb", type=DuckDBConnection, database=DUCKDB_PATH)
 
 #app
 st.title(':blue[NOAA Recreational Fishing Survey]')
 st.divider()
 
-start_year = df_obt.trip_year.min()
-end_year = df_obt.trip_year.max()
-total_trips = df_obt.size
+df = conn.query(f"""select 
+                min(trip_year), 
+                max(trip_year), 
+                count(*) 
+                from {SCHEMA}.trip_details
+                --where species_common_name in 
+                --(select species_common_name from {SCHEMA}.top_species)
+                """)
+start_year = df.iat[0,0]
+end_year = df.iat[0,1]
+total_trips = df.iat[0,2]
 
 col1, col2 = st.columns(2)
 with col1:
@@ -97,21 +44,35 @@ with col2:
 
 tab1, tab2 = st.tabs(["Summary Statistics", "Historical Trends"])
 with tab1:
+    # DRY up df transforms
     with st.expander("Catch Rate for Top 10 Targeted Species by US Region"):
-        df = format_summary_df(df_region)
+        df = conn.query(f"select * from {SCHEMA}.region_catches")
+        df = df.rename(columns={"species_common_name": "Species Common Name"})
+        df = df.set_index("Species Common Name")
+        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
+        keys = df.columns.tolist()
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
     with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Season"):
-        df = format_summary_df(df_season)
+        df = conn.query(f"select * from {SCHEMA}.season_catches")
+        df = df.rename(columns={"species_common_name": "Species Common Name"})
+        df = df.set_index("Species Common Name")
+        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
     with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Method", expanded=True):
-        df = format_summary_df(df_method)
+        df = conn.query(f"select * from {SCHEMA}.method_catches")
+        df = df.rename(columns={"species_common_name": "Species Common Name"})
+        df = df.set_index("Species Common Name")
+        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
 with tab2:
-    top_species = df_species.species_common_name.tolist()
-    df = df_obt.query('species_common_name in @top_species')
+    df = conn.query(f"""select * from {SCHEMA}.trip_details 
+                        where species_common_name
+                        in (
+                        select species_common_name from {SCHEMA}.top_species
+                        )""")
     df = df.sort_values('trip_date', ascending=True)
 
     with st.expander("Select Filters for Charting"):

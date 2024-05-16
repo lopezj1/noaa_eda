@@ -5,6 +5,7 @@
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Approach](#approach)
+  - [How to Run this Project](#how-to-run-this-project)
     - [Extract \& Load (EL)](#extract--load-el)
     - [Transform (T)](#transform-t)
     - [Exploratory Data Analysis (EDA)](#exploratory-data-analysis-eda)
@@ -24,6 +25,14 @@ In this project, survey data will be extracted from an NOAA website and loaded i
 An end-to-end data product will be built consisting of extracting, loading, and transforming (ELT) of raw data to generating visualizations on a web application.  The high level data flow, with technologies used, can be seen below:
 
 ![Alt text](images/noaa_project_data_flow_diagram.jpg)
+
+## How to Run this Project
+docker compose up -d
+visit prefect dashboard at 127.0.0.1:4200
+run ingest flow from ui
+run transform flow from ui
+start streamlit app
+go to streamlit app
 
 ### Extract & Load (EL)
 Survey data, in the form of csv files, is contained in zip folders by year and wave (if multiple survey were taken that year).  Python script **ingest_noaa.py** will handle the extract and load (EL) of the data.  The EL pipeline consists of the following general steps:

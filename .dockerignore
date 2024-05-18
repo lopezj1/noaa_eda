@@ -32,3 +32,4 @@ notebooks/
 spreadsheets/
 *.prefectignore
 **/dbt_packages
+prefect_start.sh

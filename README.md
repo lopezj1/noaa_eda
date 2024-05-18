@@ -6,57 +6,98 @@
   - [Introduction](#introduction)
   - [Approach](#approach)
   - [How to Run this Project](#how-to-run-this-project)
+  - [Project Steps](#project-steps)
     - [Extract \& Load (EL)](#extract--load-el)
     - [Transform (T)](#transform-t)
-    - [Exploratory Data Analysis (EDA)](#exploratory-data-analysis-eda)
-    - [Web Application](#web-application)
-  - [Insights](#insights)
+      - [Models](#models)
+      - [Analyses](#analyses)
+      - [Seeds](#seeds)
+      - [Macros](#macros)
+      - [Tests](#tests)
+    - [Orchestration](#orchestration)
+    - [Web Application for Visualizations](#web-application-for-visualizations)
+    - [Deploying Project](#deploying-project)
   - [Conclusion](#conclusion)
   - [Future Considerations](#future-considerations)
     - [Machine Learning](#machine-learning)
   - [References](#references)
 
 ## Introduction
-NOAA Fisheries’ Marine Recreational Information Program (MRIP) conducts recreational fishing surveys at the national level to estimate total recreational catch.  This data is used to assess and maintain sustainable fish stocks.  Survey data is available from 1981 to 2023.
+NOAA Fisheries’ Marine Recreational Information Program (MRIP) conducts annual recreational saltwater fishing surveys at the national level to estimate total recreational catch.  This data is used to assess and maintain sustainable fish stocks.  Survey data is available from 1981 to 2023.
 
-In this project, survey data will be extracted from an NOAA website and loaded into a data warehouse.  This data will then be transformed as needed to be ready fo reporting & analytics.  A web app will be used to interact with the transformed data and generate insights.
+In this project, survey data will be extracted from an NOAA website and loaded into a data warehouse.  This data will then be transformed as needed to be ready for reporting & analytics.  A Streamlit app will be used to interact with the transformed data and generate insights.
 
 ## Approach
-An end-to-end data product will be built consisting of extracting, loading, and transforming (ELT) of raw data to generating visualizations on a web application.  The high level data flow, with technologies used, can be seen below:
+An end-to-end data product will be built consisting of extracting, loading, and transforming (ELT) of raw data to generating dynamic and interactive visualizations on a web application.  The high level data flow, with technologies used, can be seen below:
 
 ![Alt text](images/noaa_project_data_flow_diagram.jpg)
+***update image to show prefect***
 
 ## How to Run this Project
-docker compose up -d
-visit prefect dashboard at 127.0.0.1:4200
-run ingest flow from ui
-run transform flow from ui
-start streamlit app
-go to streamlit app
+1. Go to directory where repo will be cloned to
+   - `cd <directory>`
+2. Clone repo to directory
+   - `git clone https://github.com/lopezj1/noaa_eda.git`
+3. Switch to project directory
+   - `cd noaa_eda`
+4. Run docker compose to spin up container
+   - `docker compose up -d`
+5. Visit prefect dashboard at http://127.0.0.1:4200
+6. Quick run ingest flow from Deployments
+- Wait for this to finish (may take up to 45 minutes)
+1. Quick run dbt flow from Deployments
+2. Start streamlit app
+   - Open new shell in container
+   - `docker exec ...`
+   - `streamlit run app/app.py`
+3. Visit streamlit app at http://localhost:8501
+4.  DBT docs can be seen by doing the following:
+    - Open new shell in container
+    - `docker exec ...`
+    - `cd elt/transform`
+    - `dbt docs generate`
+    - `dbt docs serve`
+5.  Visit dbt docs at http://localhost:8080
 
+## Project Steps
 ### Extract & Load (EL)
-Survey data, in the form of csv files, is contained in zip folders by year and wave (if multiple survey were taken that year).  Python script **ingest_noaa.py** will handle the extract and load (EL) of the data.  The EL pipeline consists of the following general steps:
+Survey data is stored at https://www.st.nmfs.noaa.gov/st1/recreational/MRIP_Survey_Data/CSV/.  Data is stored as csv files inside zip folders cataloged by year and wave (if multiple survey were taken that year).  Python script **ingest_noaa.py** will handle the extract and load (EL) of the data.  The EL pipeline consists of the following general steps:
 
 1. GET request to retrieve folders named by year and wave
 2. Unzip folders to extract csv files
 3. Copy csv files to /tmp folder in main project directory
 4. Write pandas dataframes to tables (1-to-1 relationship) in a persistent **DuckDB** schema named **raw**
+- To be memory efficient each individal csv file is processed with the help of the **DLT** python library.
 
 ### Transform (T)
-After loading the source data into **DuckDB**, data models will be created to transform the raw data to feature rich data in a separate schema named **analytics** using **dbt**.  Tests and documentation will be created for the dbt project.
+After loading the source data into **DuckDB**, data models were created to transform the raw data to feature rich data in a separate schema named **analytics** using **dbt**.  Tests and documentation were also created for the dbt project.
 
-### Exploratory Data Analysis (EDA)
-EDA will be conducted in the form of a **jupyter notebook**.  This will be the sandbox to test proof of concept visualizations to later build into a web application.
+#### Models
+- Staging
+- Intermediate
+- Marts
 
-Potential questions:
-- Fishery health trend by region?
-- etc.
+#### Analyses
 
-### Web Application
-A web app will be built using **Streamlit** to allow for self serve analytics.  This web app will be deployed via **Streamlit Community Cloud**.
+#### Seeds
 
-## Insights
-List out insights from the data with explanation and images.
+#### Macros
+
+#### Tests
+
+See dbt docs for more in-depth details
+
+### Orchestration
+The ELT pipelines were orchestrated using **Prefect**.
+
+### Web Application for Visualizations
+A web app was built using **Streamlit** to allow for self serve analytics.  Some interesting observations from the data are the following:
+
+- observation 1
+- observation 2
+
+### Deploying Project
+This project can be run entirely in one container using **Docker**.  This allows for better reproducibility and easier deployment on GCP, where I am hosting the project at https.
 
 ## Conclusion
 Summarize project and its importance in fishery health.

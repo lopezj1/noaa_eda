@@ -27,7 +27,7 @@ try:
     DEPLOYMENTS = []
     DEPLOYMENTS.append(flow_deploy(flow=ingest_noaa.ingest_noaa,name='ingest_noaa_data',parameters={'start_year':2018,'end_year':2023}))
     DEPLOYMENTS.append(flow_deploy(flow=export_parquet.export_parquet,name='export_noaa_parquet',parameters={'table':'analytics.trip_details'}))
-    DEPLOYMENTS.append(flow_deploy(flow=transform_dbt.transform_dbt,name='transform_noaa_data'))
+    DEPLOYMENTS.append(flow_deploy(flow=transform_dbt.transform_dbt,name='transform_noaa_data',parameters={}))
 
     if __name__ == '__main__':
         for deployment in DEPLOYMENTS:

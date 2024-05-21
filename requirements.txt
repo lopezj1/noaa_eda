@@ -8,3 +8,4 @@ streamlit==1.33.0
 dbt-duckdb==1.7.3
 lxml==5.1.0
 dlt==0.4.7
+prefect-dbt-flow==0.5.8

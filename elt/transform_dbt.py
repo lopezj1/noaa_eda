@@ -6,7 +6,7 @@ from prefect_dbt_flow.dbt import DbtProfile, DbtProject
 transform_dbt = dbt_flow(
     project=DbtProject(
         name="transform_dbt",
-        project_dir=Path() / "transform_dbt",
+        project_dir=Path().resolve() / "elt/transform_dbt",
         profiles_dir=Path.home() / ".dbt",
     ),
     profile=DbtProfile(

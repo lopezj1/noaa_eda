@@ -44,20 +44,19 @@ An end-to-end data product will be built consisting of extracting, loading, and 
    - `docker compose up -d`
 5. Visit prefect dashboard at http://127.0.0.1:4200
 6. Quick run ingest flow from Deployments
-- Wait for this to finish (may take up to 45 minutes)
-1. Quick run dbt flow from Deployments
-2. Start streamlit app
-   - Open new shell in container
+   - *Default year range is from 2018-2023 to have quicker loading time.*
+7. Quick run dbt flow from Deployments
+8. Start streamlit app by opening new shell in container
    - `docker exec ...`
    - `streamlit run app/app.py`
-3. Visit streamlit app at http://localhost:8501
-4.  DBT docs can be seen by doing the following:
+9. Visit streamlit app at http://localhost:8501
+10. DBT docs can be seen by opening new shell in container and running following commands:
     - Open new shell in container
     - `docker exec ...`
     - `cd elt/transform`
     - `dbt docs generate`
     - `dbt docs serve`
-5.  Visit dbt docs at http://localhost:8080
+11. Visit dbt docs at http://localhost:8080
 
 ## Project Steps
 ### Extract & Load (EL)

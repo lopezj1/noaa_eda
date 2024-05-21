@@ -35,7 +35,6 @@ def fetch_noaa_zip_folders(base_url: str) -> list:
     df_list = pd.read_html(html)
     df = df_list[-1]
     lszip = df[df.Name.str.startswith("ps_", na=False)]["Name"].tolist()
-    # lszip = df[df.Name.str.endswith(".zip", na=False)]["Name"].tolist()
     lszip = fix_file_names(lszip)
 
     print(f'Zip Folders found: {lszip}')
@@ -100,10 +99,6 @@ def get_dataset_size(dataset: str, directory: Path) -> None:
 
     for file in directory.glob(f"{dataset}*"):
         dataset_size += file.stat().st_size
-
-    # for file in os.listdir(f"{directory}/"):
-    #     if file.startswith(f"{dataset}"):
-    #         dataset_size += os.path.getsize(f"{directory}/{file}")
 
     print(f"{dataset} files size: " + str(round(dataset_size / (1024**3), 2)) + " GB")
 

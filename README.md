@@ -42,17 +42,17 @@ An end-to-end data product will be built consisting of extracting, loading, and 
    - `cd noaa_eda`
 4. Run docker compose to spin up container
    - `docker compose up -d`
-5. Visit prefect dashboard at http://127.0.0.1:4200
+5. Visit prefect dashboard at http://localhost:4200
 6. Quick run ingest flow from Deployments
    - *Default year range is from 2018-2023 to have quicker loading time.*
 7. Quick run dbt flow from Deployments
-8. Start streamlit app by opening new shell in container
-   - `docker exec ...`
+8. Start streamlit app by opening new shell inside the container
+   - `docker exec -it noaa-app bash`
    - `streamlit run app/app.py`
 9. Visit streamlit app at http://localhost:8501
 10. DBT docs can be seen by opening new shell in container and running following commands:
-    - Open new shell in container
-    - `docker exec ...`
+    - Open new shell inside container
+    - `docker exec -it noaa-app bash`
     - `cd elt/transform`
     - `dbt docs generate`
     - `dbt docs serve`

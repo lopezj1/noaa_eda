@@ -3,3 +3,5 @@ services:
     container_name: noaa-app
     build: .
     network_mode: "host"
+    environment:
+      - DBT_PROFILES_DIR=/app/.dbt

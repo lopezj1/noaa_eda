@@ -11,19 +11,19 @@ def get_csv_files_by_dataset(dataset: str, directory: Path) -> list:
     return csv_files
 
 @flow(log_prints=True)
-def load_csv_data_duckdb(dataset: str, directory: Path, schema: str) -> None:
+def load_csv_data_duckdb(dataset: str, source_dir: Path, destination_dir: Path, schema: str) -> None:
 
     # Create a dlt pipeline
     pipeline = dlt.pipeline(
         pipeline_name = "dlt_load_csv_data",
-        destination=dlt.destinations.duckdb(credentials="noaa_dw.duckdb"),
+        destination=dlt.destinations.duckdb(credentials=f"{destination_dir}/noaa_dw.duckdb"),
         dataset_name=schema,
         # full_refresh=True,
         progress="log",
     )
 
     # Load each CSV file into the same table
-    csv_files = get_csv_files_by_dataset(dataset, directory)
+    csv_files = get_csv_files_by_dataset(dataset, source_dir)
     for csv_file in csv_files:
         df = pd.read_csv(csv_file, low_memory=False, dtype='object')
         load_info = pipeline.run(

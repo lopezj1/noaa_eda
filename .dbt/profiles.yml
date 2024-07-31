@@ -1,0 +1,8 @@
+noaa_data:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: '~/de_projects/noaa_eda/data/noaa_dw.duckdb'
+      schema: analytics
+      threads: 1

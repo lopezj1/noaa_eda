@@ -5,6 +5,7 @@ import time
 
 #Constants
 TMP_DIR = Path(__file__).resolve().parent.parent / "tmp"
+DB_DIR = Path(__file__).resolve().parent.parent / "data"
 SCHEMA = 'raw'
 NOAA_URL = "https://www.st.nmfs.noaa.gov/st1/recreational/MRIP_Survey_Data/CSV/" 
 DATASETS = ['catch', 'size', 'trip']
@@ -19,7 +20,7 @@ def ingest_noaa(start_year: int = 2018, end_year: int = 2023) -> None:
     
     for dataset in DATASETS:
         start_time = time.time()
-        dlt_utils.load_csv_data_duckdb(dataset, TMP_DIR, SCHEMA)
+        dlt_utils.load_csv_data_duckdb(dataset, TMP_DIR, DB_DIR, SCHEMA)
         end_time = time.time()
         execution_time = end_time - start_time
         print(f"Process csv and insert into db time for {dataset}:", execution_time, " seconds")

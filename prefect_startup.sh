@@ -8,7 +8,7 @@ prefect agent start --pool 'default-agent-pool' &
 
 sleep 30
 
-python elt/prefect_deployment.py
+python prefect_flows/prefect_deployment.py
 
 # keep shell open to keep container alive
 wait

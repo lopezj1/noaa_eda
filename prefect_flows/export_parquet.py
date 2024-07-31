@@ -5,8 +5,8 @@ from ingest_utils import dlt_utils
 
 #Constants
 PROJECT_PATH = str(Path(__file__).resolve().parent.parent)
-DUCKDB_PATH = PROJECT_PATH + "/noaa_dw.duckdb"
-PARQUET_PATH = PROJECT_PATH + "/app/data"
+DUCKDB_PATH = PROJECT_PATH + "/data/noaa_dw.duckdb"
+PARQUET_PATH = PROJECT_PATH + "/data"
 
 @flow(log_prints=True)
 def export_parquet(duckdb_path: str = DUCKDB_PATH, table: str = "analytics.trip_details", row_group_size: int = 50000) -> None:

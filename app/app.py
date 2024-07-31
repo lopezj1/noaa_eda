@@ -15,7 +15,7 @@ st.set_page_config(
 
 #constants
 SCHEMA = 'analytics'
-DUCKDB_PATH = str(Path(__file__).resolve().parent.parent / "noaa_dw.duckdb")
+DUCKDB_PATH = str(Path().resolve() / "data/noaa_dw.duckdb")
 
 #connections
 conn = st.connection("duckdb", type=DuckDBConnection, database=DUCKDB_PATH)

@@ -1,8 +1,8 @@
 __pycache__
 .prefectignore
 /tmp
-elt/transform_dbt/logs
-elt/transform_dbt/target
+dbt_transforms/logs
+dbt_transforms/target
 .venv
 *.duckdb*
 node_modules

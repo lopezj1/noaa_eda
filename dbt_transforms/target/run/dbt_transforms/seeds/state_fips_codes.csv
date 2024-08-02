@@ -1,0 +1,11 @@
+
+    
+    
+    truncate table "noaa_dw"."analytics"."state_fips_codes";
+    -- dbt seed --
+    
+          COPY "noaa_dw"."analytics"."state_fips_codes" FROM '/app/dbt_transforms/seeds/state_fips_codes.csv' (FORMAT CSV, HEADER TRUE, DELIMITER ',')
+        
+
+;
+  

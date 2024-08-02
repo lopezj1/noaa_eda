@@ -38,7 +38,6 @@ with drop_cols as (
   "var_id",
   "alt_flag",
   "fl_reg",
-  "wp_catch_precal",
   "wp_int",
   "wp_catch",
   "date_published"

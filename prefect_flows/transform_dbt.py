@@ -3,12 +3,13 @@ from prefect.task_runners import SequentialTaskRunner
 from prefect_dbt_flow import dbt_flow
 from prefect_dbt_flow.dbt import DbtProfile, DbtProject
 
-ROOT_DIR=Path().resolve().parent
+PROJECT_DIR=Path(__file__).resolve().parent.parent
+print(f'Root Directory: str({PROJECT_DIR})')
 transform_dbt = dbt_flow(
     project=DbtProject(
         name="transform_dbt",
-        project_dir=ROOT_DIR / "app/dbt_transforms",
-        profiles_dir=ROOT_DIR / "app/.dbt",
+        project_dir=PROJECT_DIR / "dbt_transforms",
+        profiles_dir=PROJECT_DIR / ".dbt",
     ),
     profile=DbtProfile(
         target="dev",

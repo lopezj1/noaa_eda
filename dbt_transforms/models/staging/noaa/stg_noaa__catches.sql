@@ -23,7 +23,7 @@ valid_records as (
 renamed as (
 
     select
-        {{ dbt_utils.generate_surrogate_key(['id_code','common','tot_cat','tot_len','year']) }} as catch_id,
+        --{{ dbt_utils.generate_surrogate_key(['id_code','common','tot_cat','tot_len','year']) }} as catch_id,
         try_cast(id_code as bigint) as survey_id,
         try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
         try_cast(year as int) as survey_year,
@@ -113,13 +113,29 @@ renamed as (
 --remove duplicates
 deduplicated as (
 
-{{ dbt_utils.snowflake__deduplicate(
+{# {{ dbt_utils.snowflake__deduplicate(
     relation='renamed',
     partition_by='catch_id',
     order_by='survey_year desc',
    )
+}} #}
+
+{{ dbt_utils.snowflake__deduplicate(
+    relation='renamed',
+    partition_by='survey_id, species_common_name',
+    order_by='data_publish_date desc, survey_year desc'
+   )
 }}
+
+),
+
+staging as (
+
+    select 
+    {{ dbt_utils.generate_surrogate_key(['survey_id', 'species_common_name']) }} as survey_species_id,
+    *
+    from deduplicated
 
 )
 
-select * from deduplicated
+select * from staging

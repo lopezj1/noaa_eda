@@ -23,7 +23,7 @@ valid_records as (
 renamed as (
 
     select
-        {{ dbt_utils.generate_surrogate_key(['id_code', 'year']) }} as trip_id,
+        --{{ dbt_utils.generate_surrogate_key(['id_code', 'year']) }} as trip_id,
         try_cast(id_code as bigint) as survey_id,
         try_cast(strptime(date_published, '%m/%d/%Y') as date) as data_publish_date,
         try_cast(year as int) as survey_year,
@@ -152,10 +152,17 @@ renamed as (
 --remove duplicates
 deduplicated as (
 
-{{ dbt_utils.snowflake__deduplicate(
+{# {{ dbt_utils.snowflake__deduplicate(
     relation='renamed',
     partition_by='trip_id',
     order_by='survey_year desc',
+   )
+}} #}
+
+{{ dbt_utils.snowflake__deduplicate(
+    relation='renamed',
+    partition_by='survey_id',
+    order_by='data_publish_date desc, survey_year desc'
    )
 }}
 

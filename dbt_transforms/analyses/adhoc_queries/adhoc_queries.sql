@@ -92,3 +92,17 @@ select caught, us_region, try_cast(caught as int) / sum(try_cast(caught as int))
 
 --
 select count(*) from analytics.trip_details
+
+-- investigate rows with same survey_id
+select survey_id, count()
+from {{ ref('stg_noaa__catches') }}
+group by survey_id
+order by count() desc
+
+select * from {{ ref('stg_noaa__catches') }} 
+where survey_id = 1644120190812013
+order by species_common_name desc
+
+select * from {{ ref('stg_noaa__sizes') }} 
+where survey_id = 1636620190414005
+order by species_common_name desc

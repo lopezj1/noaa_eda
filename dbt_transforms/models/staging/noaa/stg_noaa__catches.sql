@@ -113,13 +113,6 @@ renamed as (
 --remove duplicates
 deduplicated as (
 
-{# {{ dbt_utils.snowflake__deduplicate(
-    relation='renamed',
-    partition_by='catch_id',
-    order_by='survey_year desc',
-   )
-}} #}
-
 {{ dbt_utils.snowflake__deduplicate(
     relation='renamed',
     partition_by='survey_id, species_common_name',
@@ -129,6 +122,7 @@ deduplicated as (
 
 ),
 
+-- create surrogate key
 staging as (
 
     select 

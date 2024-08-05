@@ -1,18 +1,12 @@
-with catches as (
-
-        select * from {{ ref('stg_noaa__catches') }}
-
-),
-
-sizes as (
-
-        select * from {{ ref('stg_noaa__sizes') }}
-
-),
-
-trips as (
+with trips as (
 
         select * from {{ ref('int_trips_fips_join') }}
+
+),
+
+catches as (
+
+        select * from {{ ref('stg_noaa__catches') }}
 
 ),
 
@@ -47,12 +41,7 @@ trip_details as (
         t.number_of_anglers_interviewed,
         t.trip_fishing_effort_hours,
         t.caught,
-        s.species_common_name,
-        s.fish_weight_kg,
-        s.imputed_weight,
-        s.fish_length_in,
-        s.fish_length_cm,
-        s.imputed_length,
+        c.species_common_name,
         c.num_fish_harvested_observed_adjusted,
         c.num_fish_harvested_observed_unadjusted,
         c.num_fish_harvested_unobserved_adjusted,
@@ -68,7 +57,6 @@ trip_details as (
         c.total_weight_fish_harvested_kg
         from trips t
         left join catches c on c.survey_id = t.survey_id
-        left join sizes s on s.survey_id = t.survey_id
 
 )
 

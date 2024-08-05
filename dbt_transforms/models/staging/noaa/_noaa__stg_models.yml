@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_noaa__trips
-    description: ""
+    description: "Grain is 1 survey"
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -147,7 +147,7 @@ models:
         description: ""
 
   - name: stg_noaa__catches
-    description: ""
+    description: "Grain is total catch per survey"
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -300,7 +300,7 @@ models:
         description: ""
 
   - name: stg_noaa__sizes
-    description: ""
+    description: "Grain is individual catches on a survey"
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

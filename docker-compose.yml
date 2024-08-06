@@ -4,9 +4,6 @@ services:
     build: .
     network_mode: "host"
     environment:
-      - DBT_PROFILES_DIR=/app/.dbt
+      - DBT_PROFILES_DIR=/noaa_app/.dbt
     volumes:
-      - ./prefect_flows:/app/prefect_flows
-      - ./dbt_transforms:/app/dbt_transforms
-      - ./app:/app/app
-      - ./.dbt:/app/.dbt
+      - ./:/noaa_app

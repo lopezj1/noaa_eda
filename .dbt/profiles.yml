@@ -3,6 +3,6 @@ noaa_data:
   outputs:
     dev:
       type: duckdb
-      path: '/app/data/noaa_dw.duckdb'
+      path: '/noaa_app/data/noaa_dw.duckdb'
       schema: analytics
       threads: 1

@@ -27,9 +27,11 @@ LICENSE
 README.md
 *.duckdb
 *.wal
-images/
+*images*
 notebooks/
 spreadsheets/
 *.prefectignore
 **/dbt_packages
-prefect_start.sh
+prefect_startup.sh
+*logs*
+*dbt_packages*

@@ -10,8 +10,8 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
-# Set working directory early to ensure following paths are relative to /app
-WORKDIR /app
+# Set working directory early to ensure following paths are relative to /noaa_app
+WORKDIR /noaa_app
 
 # Install dependencies
 COPY requirements.txt .

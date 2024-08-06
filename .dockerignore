@@ -35,3 +35,4 @@ spreadsheets/
 prefect_startup.sh
 *logs*
 *dbt_packages*
+*.code-workspace*

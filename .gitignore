@@ -13,3 +13,4 @@ package.json
 .vscode
 *dbt_packages*
 *.parquet*
+*.user.yml*

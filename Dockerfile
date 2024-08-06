@@ -8,6 +8,8 @@ ENV PYTHONUNBUFFERED=1
 
 # Update package lists and install curl
 RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y git && \
     rm -rf /var/lib/apt/lists/*
 
 # Set working directory early to ensure following paths are relative to /noaa_app

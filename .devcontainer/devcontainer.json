@@ -31,6 +31,7 @@
 
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "./prefect_startup.sh",
+	"postCreateCommand": "cd dbt_transforms && dpt deps",
 	"customizations": {
 		"vscode": {
 			"extensions": [

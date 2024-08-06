@@ -1,7 +1,7 @@
 with
-sizes as (
+catches as (
 
-        select * from {{ ref('stg_noaa__sizes') }}
+        select * from {{ ref('stg_noaa__catches') }}
 
 ),
 
@@ -21,16 +21,16 @@ joined as (
 
         select
         t.fishing_season,
-        s.species_common_name,
+        c.species_common_name,
         try_cast(t.caught as int) as caught
         from trips t
-        left join sizes s on s.survey_id = t.survey_id
+        left join catches c on c.survey_id = t.survey_id
         where 
         t.fishing_season is not null
         and
         t.caught is not null
         and
-        s.species_common_name in (select species_common_name from top_species)
+        c.species_common_name in (select species_common_name from top_species)
 
 ),
 

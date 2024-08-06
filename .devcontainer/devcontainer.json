@@ -30,7 +30,7 @@
 	// "shutdownAction": "none",
 
 	// Uncomment the next line to run commands after the container is created.
-	"postCreateCommand": "./prefect_startup.sh",
+	// "postCreateCommand": "./prefect_startup.sh",
 	"customizations": {
 		"vscode": {
 			"extensions": [

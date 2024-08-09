@@ -10,7 +10,9 @@ st.set_page_config(
     page_icon="🎣",
     layout="centered",
     menu_items={
-        'About': "# This is a header. This is an *extremely* cool app!"
+        'About': """This web app allows interactive exploratory data analysis 
+                    for NOAA recreational saltwater fishing survey data
+                    [https://github.com/lopezj1/noaa_eda] (https://github.com/lopezj1/noaa_eda)"""
     }
 )
 
@@ -22,7 +24,7 @@ DUCKDB_PATH = str(Path().resolve() / "data/noaa_dw.duckdb")
 conn = st.connection("duckdb", type=DuckDBConnection, database=DUCKDB_PATH)
 
 #app
-st.title(':blue[NOAA Recreational Fishing Survey]')
+st.title(':blue[NOAA Recreational Saltwater Fishing Survey Data Analysis]')
 st.divider()
 
 df = conn.query(f"""select 
@@ -84,8 +86,10 @@ with tab1:
                                    'us_region', 
                                    'fishing_season', 
                                    'fishing_method_uncollapsed',
-                                   'species_common_name'], 
+                                   'species_common_name'],
+                                #    color='us_region',
                                    values='total_fish')
+        fig.data[0].textinfo = 'label+text+value'
         fig.update_traces(root_color="lightgrey")
         fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)

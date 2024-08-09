@@ -23,4 +23,4 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Specify the command to run on container start
-CMD ["./prefect_startup.sh"]
+ENTRYPOINT ["streamlit", "run", "app/app.py"]

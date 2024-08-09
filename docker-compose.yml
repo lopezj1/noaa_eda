@@ -1,15 +1,43 @@
 services:
-  app:
-    container_name: noaa-app
+  streamlit:
+    container_name: noaa-streamlit
+    restart: always
     build: 
       context: .
-      dockerfile: docker/app/Dockerfile
+      dockerfile: docker/streamlit/Dockerfile
+    ports:
+      - '8501:8501'
+    volumes:
+      - ./data:/noaa_app/data
+      - ./app:/noaa_app/app
+  prefect:
+    container_name: noaa-prefect
+    restart: always
+    build: 
+      context: .
+      dockerfile: docker/prefect/Dockerfile
     network_mode: "host"
     environment:
       - DBT_PROFILES_DIR=/noaa_app/.dbt
     volumes:
-      - ./:/noaa_app
+      - ./data:/noaa_app/data
+      - ./prefect_flows:/noaa_app/prefect_flows
+      - ./dbt_transforms:/noaa_app/dbt_transforms
+      - ./.dbt:/noaa_app/.dbt
+  dbt:
+    container_name: noaa-dbt
+    restart: always
+    build: 
+      context: .
+      dockerfile: docker/dbt/Dockerfile
+    network_mode: "host"
+    environment:
+      - DBT_PROFILES_DIR=/noaa_app/.dbt
+    volumes:
+      - ./dbt_transforms:/noaa_app/dbt_transforms
+      - ./.dbt:/noaa_app/.dbt
   nginx-proxy-manager:
+    container_name: noaa-nginx
     image: 'jc21/nginx-proxy-manager:latest'
     restart: always
     security_opt:

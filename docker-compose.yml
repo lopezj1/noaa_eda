@@ -1,9 +1,23 @@
 services:
   app:
     container_name: noaa-app
-    build: .
+    build: 
+      context: .
+      dockerfile: docker/app/Dockerfile
     network_mode: "host"
     environment:
       - DBT_PROFILES_DIR=/noaa_app/.dbt
     volumes:
       - ./:/noaa_app
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: always
+    security_opt:
+      - label:disable
+    ports:
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '8081:81' # Admin Web Port
+    volumes:
+      - ./container-data:/data
+      - ./certs:/etc/letsencrypt

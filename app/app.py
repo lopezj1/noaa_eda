@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 st.set_page_config(
     page_title="NOAA Fishing Survey",
     page_icon="🎣",
-    layout="centered",
+    layout="wide",
     menu_items={
         'About': """This web app allows interactive exploratory data analysis 
                     for NOAA recreational saltwater fishing survey data

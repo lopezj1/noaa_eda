@@ -110,8 +110,31 @@ with col2:
 with col3:
     st.metric(label="Total Number of Fish Caught", value=f"{total_fish:,}")
 
-tab1, tab2, tab3 = st.tabs(["Overview", "Stats", "Trends"])
+tab1, tab2, tab3 = st.tabs(["Summary", "Trends", "Correlation"])
 with tab1:
+    with st.expander("Catch Rate for Top 10 Targeted Species by US Region", expanded=True):
+        df = get_region_data()
+        df = df.rename(columns={"species_common_name": "Species Common Name"})
+        df = df.set_index("Species Common Name")
+        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
+        keys = df.columns.tolist()
+        st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
+
+    with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Season", expanded=True):
+        df = get_season_data()
+        df = df.rename(columns={"species_common_name": "Species Common Name"})
+        df = df.set_index("Species Common Name")
+        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
+        st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
+
+    with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Method", expanded=True):
+        df = get_method_data()
+        df = df.rename(columns={"species_common_name": "Species Common Name"})
+        df = df.set_index("Species Common Name")
+        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
+        st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
+
+with tab2:
     # DRY up df transforms
     with st.expander("Run Chart of Trips & Catches", expanded=True):
         df = get_run_chart_data()
@@ -139,29 +162,6 @@ with tab1:
         fig.update_traces(root_color="lightgrey", textinfo='label+text+value')
         fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-with tab2:
-    with st.expander("Catch Rate for Top 10 Targeted Species by US Region", expanded=True):
-        df = get_region_data()
-        df = df.rename(columns={"species_common_name": "Species Common Name"})
-        df = df.set_index("Species Common Name")
-        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
-        keys = df.columns.tolist()
-        st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
-
-    with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Season", expanded=True):
-        df = get_season_data()
-        df = df.rename(columns={"species_common_name": "Species Common Name"})
-        df = df.set_index("Species Common Name")
-        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
-        st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
-
-    with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Method", expanded=True):
-        df = get_method_data()
-        df = df.rename(columns={"species_common_name": "Species Common Name"})
-        df = df.set_index("Species Common Name")
-        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
-        st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
 with tab3:
     df = get_top_species_trip_data()

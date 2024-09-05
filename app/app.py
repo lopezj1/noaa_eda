@@ -20,22 +20,83 @@ st.set_page_config(
 SCHEMA = 'analytics'
 DUCKDB_PATH = str(Path().resolve() / "data/noaa_dw.duckdb")
 
-#connections
-conn = st.connection("duckdb", type=DuckDBConnection, database=DUCKDB_PATH)
+@st.cache_resource
+def get_duckdb_connection():
+    return st.connection("duckdb", type=DuckDBConnection, database=DUCKDB_PATH)
+
+conn = get_duckdb_connection()
+
+@st.cache_data
+def get_summary_data():
+    return conn.query(f"""select 
+        min(trip_year), 
+        max(trip_year), 
+        count(*),
+        cast(sum(total_number_fish_caught) as int)
+        from {SCHEMA}.trip_details
+    """)
+
+@st.cache_data
+def get_run_chart_data():
+    return conn.query(f"""
+        select 
+        trip_year, 
+        count(*) as total_trips,
+        cast(sum(total_number_fish_caught) as int) as total_fish
+        from {SCHEMA}.trip_details
+        group by trip_year
+        order by trip_year asc
+    """)
+
+@st.cache_data
+def get_tree_map_data():
+    return conn.query(f"""
+        select 
+        us_region,    
+        fishing_season, 
+        fishing_method_uncollapsed,
+        species_common_name,
+        cast(total_number_fish_caught as int) as total_fish
+        from {SCHEMA}.trip_details
+    """)
+
+@st.cache_data
+def get_region_data():
+    return conn.query(f"select * from {SCHEMA}.region_catches")
+
+@st.cache_data
+def get_season_data():
+    return conn.query(f"select * from {SCHEMA}.season_catches")
+
+@st.cache_data
+def get_method_data():
+    return conn.query(f"select * from {SCHEMA}.method_catches")
+
+@st.cache_data
+def get_top_species_trip_data():
+    return conn.query(f"""
+        select
+        trip_date,
+        trip_year,
+        species_common_name,
+        us_region,
+        fishing_season,
+        fishing_method_uncollapsed,
+        total_length_fish_harvested_mm,
+        total_weight_fish_harvested_kg, 
+        trip_fishing_effort_hours,
+        number_of_outings_in_last_2_months,
+        number_of_outings_in_last_year,
+        total_number_fish_caught
+        from {SCHEMA}.trip_details 
+        where species_common_name in (select species_common_name from {SCHEMA}.top_species)
+    """)
 
 #app
 st.title(':blue[NOAA Recreational Saltwater Fishing Survey Data Analysis]')
 st.divider()
 
-df = conn.query(f"""select 
-                min(trip_year), 
-                max(trip_year), 
-                count(*),
-                cast(sum(total_number_fish_caught) as int)
-                from {SCHEMA}.trip_details
-                --where species_common_name in 
-                --(select species_common_name from {SCHEMA}.top_species)
-                """)
+df = get_summary_data()
 start_year = df.iat[0,0]
 end_year = df.iat[0,1]
 total_trips = df.iat[0,2]
@@ -53,15 +114,7 @@ tab1, tab2, tab3 = st.tabs(["Overview", "Stats", "Trends"])
 with tab1:
     # DRY up df transforms
     with st.expander("Run Chart of Trips & Catches", expanded=True):
-        df = conn.query(f"""
-                        select 
-                        trip_year, 
-                        count(*) as total_trips,
-                        cast(sum(total_number_fish_caught) as int) as total_fish
-                        from {SCHEMA}.trip_details
-                        group by trip_year
-                        order by trip_year asc
-                        """)
+        df = get_run_chart_data()
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=df['trip_year'], y=df['total_trips'],
                             mode='lines+markers',
@@ -72,15 +125,7 @@ with tab1:
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
     with st.expander("Treemap of Catches", expanded=True):
-        df = conn.query(f"""
-                        select 
-                        us_region,    
-                        fishing_season, 
-                        fishing_method_uncollapsed,
-                        species_common_name,
-                        cast(total_number_fish_caught as int) as total_fish
-                        from {SCHEMA}.trip_details
-                        """)
+        df = get_tree_map_data()
         df = df.dropna() #drop non-leaves rows
         fig = px.treemap(df, path=[px.Constant("all"), 
                                    'us_region', 
@@ -96,7 +141,7 @@ with tab1:
 
 with tab2:
     with st.expander("Catch Rate for Top 10 Targeted Species by US Region", expanded=True):
-        df = conn.query(f"select * from {SCHEMA}.region_catches")
+        df = get_region_data()
         df = df.rename(columns={"species_common_name": "Species Common Name"})
         df = df.set_index("Species Common Name")
         df = df.select_dtypes(exclude=['datetime', 'object']) * 100
@@ -104,25 +149,21 @@ with tab2:
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
     with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Season", expanded=True):
-        df = conn.query(f"select * from {SCHEMA}.season_catches")
+        df = get_season_data()
         df = df.rename(columns={"species_common_name": "Species Common Name"})
         df = df.set_index("Species Common Name")
         df = df.select_dtypes(exclude=['datetime', 'object']) * 100
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
     with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Method", expanded=True):
-        df = conn.query(f"select * from {SCHEMA}.method_catches")
+        df = get_method_data()
         df = df.rename(columns={"species_common_name": "Species Common Name"})
         df = df.set_index("Species Common Name")
         df = df.select_dtypes(exclude=['datetime', 'object']) * 100
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
 with tab3:
-    df = conn.query(f"""select * from {SCHEMA}.trip_details 
-                        where species_common_name
-                        in (
-                        select species_common_name from {SCHEMA}.top_species
-                        )""")
+    df = get_top_species_trip_data()
     df = df.sort_values('trip_date', ascending=True)
 
     with st.expander("Select Filters for Charting"):

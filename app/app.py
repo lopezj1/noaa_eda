@@ -130,12 +130,13 @@ with tab1:
         fig = px.treemap(df, path=[px.Constant("all"), 
                                    'us_region', 
                                    'fishing_season', 
-                                   'fishing_method_uncollapsed',
-                                   'species_common_name'],
+                                #    'fishing_method_uncollapsed',
+                                   'species_common_name'
+                                   ],
                                 #    color='us_region',
                                    values='total_fish')
-        fig.data[0].textinfo = 'label+text+value'
-        fig.update_traces(root_color="lightgrey")
+        # fig.data[0].textinfo = 'label+text+value'
+        fig.update_traces(root_color="lightgrey", textinfo='label+text+value')
         fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 

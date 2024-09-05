@@ -16,7 +16,9 @@ services:
     build: 
       context: .
       dockerfile: docker/prefect/Dockerfile
-    network_mode: "host"
+    ports:
+      - '4200:4200'
+    #network_mode: "host"
     environment:
       - DBT_PROFILES_DIR=/noaa_app/.dbt
     volumes:
@@ -30,7 +32,9 @@ services:
     build: 
       context: .
       dockerfile: docker/dbt/Dockerfile
-    network_mode: "host"
+    ports:
+      - '8080:8080'
+    #network_mode: "host"
     environment:
       - DBT_PROFILES_DIR=/noaa_app/.dbt
     volumes:

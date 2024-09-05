@@ -1,11 +1,11 @@
-duckdb==0.9.2
+#duckdb==0.9.2
 pandas==2.2.2
 plotly==5.18.0
 polars==0.20.15
 prefect==2.19.9
 Requests==2.31.0
 streamlit==1.33.0
-dbt-duckdb==1.7.3
+dbt-duckdb==1.8.3
 lxml==5.1.0
 dlt==0.4.7
 prefect-dbt-flow==0.5.8

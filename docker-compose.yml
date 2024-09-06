@@ -38,6 +38,7 @@ services:
     environment:
       - DBT_PROFILES_DIR=/noaa_app/.dbt
     volumes:
+      - ./data:/noaa_app/data
       - ./dbt_transforms:/noaa_app/dbt_transforms
       - ./.dbt:/noaa_app/.dbt
   nginx-proxy-manager:

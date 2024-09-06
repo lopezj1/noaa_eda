@@ -34,6 +34,8 @@ trip_details as (
         t.state_where_fisherman_resides,
         t.county_where_caught,
         t.county_where_fisherman_resides,
+        t.fips_code_where_caught,
+        t.fips_code_where_fisherman_resides,
         t.fisherman_state_residency_status,
         t.fishing_method_uncollapsed,
         t.number_of_outings_in_last_year,

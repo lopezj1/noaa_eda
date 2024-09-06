@@ -1,8 +1,10 @@
 from duckdb_connection import DuckDBConnection
+from urllib.request import urlopen
 import streamlit as st
 from pathlib import Path
 import plotly.express as px
 import plotly.graph_objects as go
+import json
 
 #configs
 st.set_page_config(
@@ -19,6 +21,8 @@ st.set_page_config(
 #constants
 SCHEMA = 'analytics'
 DUCKDB_PATH = str(Path().resolve() / "data/noaa_dw.duckdb")
+with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+    COUNTIES = json.load(response)
 
 @st.cache_resource
 def get_duckdb_connection():
@@ -34,6 +38,15 @@ def get_summary_data():
         count(*),
         cast(sum(total_number_fish_caught) as int)
         from {SCHEMA}.trip_details
+    """)
+
+@st.cache_data
+def get_demographic_data():
+    return conn.query(f"""
+        select 
+        fips_code_where_caught,
+        total_fish
+        from {SCHEMA}.fips_catches
     """)
 
 @st.cache_data
@@ -93,7 +106,7 @@ def get_top_species_trip_data():
     """)
 
 #app
-st.title(':blue[NOAA Recreational Saltwater Fishing Survey Data Analysis]')
+st.title(':blue[NOAA Fishing Survey Data Project]')
 st.divider()
 
 df = get_summary_data()
@@ -110,21 +123,36 @@ with col2:
 with col3:
     st.metric(label="Total Number of Fish Caught", value=f"{total_fish:,}")
 
-tab1, tab2, tab3 = st.tabs(["Summary", "Trends", "Correlation"])
+tab1, tab2, tab3, tab4 = st.tabs(["Demographics", "Summary", "Trends", "Correlation"])
 with tab1:
+    with st.expander("Choropleth Map of Total Fish Caught by County", expanded=True):
+        df = get_demographic_data()
+        fig = px.choropleth(df, 
+                            geojson=COUNTIES, 
+                            locations='fips_code_where_caught', 
+                            color='total_fish',
+                            color_continuous_scale="Viridis",
+                            center={'lat':38,'lon':-81},
+                            scope="usa",
+                            labels={'total_fish':'Total Fish Caught'}
+                                )
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
+with tab2:
+    with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Season", expanded=True):
+        df = get_season_data()
+        df = df.rename(columns={"species_common_name": "Species Common Name"})
+        df = df.set_index("Species Common Name")
+        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
+        st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
+
     with st.expander("Catch Rate for Top 10 Targeted Species by US Region", expanded=True):
         df = get_region_data()
         df = df.rename(columns={"species_common_name": "Species Common Name"})
         df = df.set_index("Species Common Name")
         df = df.select_dtypes(exclude=['datetime', 'object']) * 100
         keys = df.columns.tolist()
-        st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
-
-    with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Season", expanded=True):
-        df = get_season_data()
-        df = df.rename(columns={"species_common_name": "Species Common Name"})
-        df = df.set_index("Species Common Name")
-        df = df.select_dtypes(exclude=['datetime', 'object']) * 100
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
     with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Method", expanded=True):
@@ -134,7 +162,7 @@ with tab1:
         df = df.select_dtypes(exclude=['datetime', 'object']) * 100
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
-with tab2:
+with tab3:
     # DRY up df transforms
     with st.expander("Run Chart of Trips & Catches", expanded=True):
         df = get_run_chart_data()
@@ -163,7 +191,7 @@ with tab2:
         fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
-with tab3:
+with tab4:
     df = get_top_species_trip_data()
     df = df.sort_values('trip_date', ascending=True)
 

@@ -32,12 +32,13 @@ conn = get_duckdb_connection()
 
 @st.cache_data
 def get_summary_data():
-    return conn.query(f"""select 
-        min(trip_year), 
-        max(trip_year), 
-        count(*),
-        cast(sum(total_number_fish_caught) as int)
-        from {SCHEMA}.trip_details
+    return conn.query(f"""
+        select 
+        start_year,
+        end_year,
+        total_trips,
+        total_fish 
+        from {SCHEMA}.trip_catch_summary
     """)
 
 @st.cache_data
@@ -54,11 +55,9 @@ def get_run_chart_data():
     return conn.query(f"""
         select 
         trip_year, 
-        count(*) as total_trips,
-        cast(sum(total_number_fish_caught) as int) as total_fish
-        from {SCHEMA}.trip_details
-        group by trip_year
-        order by trip_year asc
+        total_trips,
+        total_fish
+        from {SCHEMA}.trip_catch_groupby_year
     """)
 
 @st.cache_data
@@ -69,8 +68,8 @@ def get_tree_map_data():
         fishing_season, 
         fishing_method_uncollapsed,
         species_common_name,
-        cast(total_number_fish_caught as int) as total_fish
-        from {SCHEMA}.trip_details
+        total_fish
+        from {SCHEMA}.catch_by_category_filtered
     """)
 
 @st.cache_data
@@ -101,8 +100,7 @@ def get_top_species_trip_data():
         number_of_outings_in_last_2_months,
         number_of_outings_in_last_year,
         total_number_fish_caught
-        from {SCHEMA}.trip_details 
-        where species_common_name in (select species_common_name from {SCHEMA}.top_species)
+        from {SCHEMA}.trip_details_top_species
     """)
 
 #app

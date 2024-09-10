@@ -4,7 +4,7 @@ plotly==5.24.0
 polars==0.20.15
 prefect==2.19.9
 Requests==2.31.0
-streamlit==1.33.0
+streamlit==1.38.0
 dbt-duckdb==1.8.3
 lxml==5.1.0
 dlt==0.4.7

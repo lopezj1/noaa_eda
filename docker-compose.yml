@@ -10,6 +10,7 @@ services:
     volumes:
       - ./data:/noaa_app/data
       - ./app:/noaa_app/app
+      - ./.streamlit:/noaa_app/.streamlit
   prefect:
     container_name: noaa-prefect
     restart: always

@@ -182,10 +182,20 @@ with tab3:
                                 #    'fishing_method_uncollapsed',
                                    'species_common_name'
                                    ],
-                                #    color='us_region',
+                                   color='fishing_season',
+                                   color_discrete_map={
+                                                        '(?)':'lightgrey', 
+                                                       'Summer':'lightpink',
+                                                       'Fall': 'lightyellow',
+                                                       'Winter': 'lightblue',
+                                                       'Spring': 'lightgreen'
+                                                       },
                                    values='total_fish')
         # fig.data[0].textinfo = 'label+text+value'
-        fig.update_traces(root_color="lightgrey", textinfo='label+text+value')
+        fig.update_traces(
+                        # root_color="lightblue", 
+                        textinfo='label+text+value'
+                        )
         fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
         st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 

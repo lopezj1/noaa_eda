@@ -11,6 +11,8 @@ services:
       - ./data:/noaa_app/data
       - ./app:/noaa_app/app
       - ./.streamlit:/noaa_app/.streamlit
+    networks:
+      - nginx_proxy_manager_default
   prefect:
     container_name: noaa-prefect
     restart: always
@@ -19,7 +21,6 @@ services:
       dockerfile: docker/prefect/Dockerfile
     ports:
       - '4200:4200'
-    #network_mode: "host"
     environment:
       - DBT_PROFILES_DIR=/noaa_app/.dbt
     volumes:
@@ -35,10 +36,13 @@ services:
       dockerfile: docker/dbt/Dockerfile
     ports:
       - '8080:8080'
-    #network_mode: "host"
     environment:
       - DBT_PROFILES_DIR=/noaa_app/.dbt
     volumes:
       - ./data:/noaa_app/data
       - ./dbt_transforms:/noaa_app/dbt_transforms
       - ./.dbt:/noaa_app/.dbt
+
+networks:
+  nginx_proxy_manager_default:
+    external: true

@@ -121,23 +121,8 @@ with col2:
 with col3:
     st.metric(label="Total Number of Fish Caught", value=f"{total_fish:,}")
 
-tab1, tab2, tab3, tab4 = st.tabs(["Demographics", "Summary", "Trends", "Correlation"])
+tab1, tab2, tab3, tab4 = st.tabs(["Summary", "Demographics", "Trends", "Correlation"])
 with tab1:
-    with st.expander("Choropleth Map of Total Fish Caught by County", expanded=True):
-        df = get_demographic_data()
-        fig = px.choropleth(df, 
-                            geojson=COUNTIES, 
-                            locations='fips_code_where_caught', 
-                            color='total_fish',
-                            color_continuous_scale="Viridis",
-                            center={'lat':38,'lon':-81},
-                            scope="usa",
-                            labels={'total_fish':'Total Fish Caught'}
-                                )
-        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
-
-with tab2:
     with st.expander("Catch Rate for Top 10 Targeted Species by Fishing Season", expanded=True):
         df = get_season_data()
         df = df.rename(columns={"species_common_name": "Species Common Name"})
@@ -160,8 +145,22 @@ with tab2:
         df = df.select_dtypes(exclude=['datetime', 'object']) * 100
         st.dataframe(df.style.format('{:.2f}%').highlight_max(axis=1))
 
+with tab2:
+    with st.expander("Choropleth Map of Total Fish Caught by County", expanded=True):
+        df = get_demographic_data()
+        fig = px.choropleth(df, 
+                            geojson=COUNTIES, 
+                            locations='fips_code_where_caught', 
+                            color='total_fish',
+                            color_continuous_scale="Viridis",
+                            center={'lat':38,'lon':-81},
+                            scope="usa",
+                            labels={'total_fish':'Total Fish Caught'}
+                                )
+        fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+        st.plotly_chart(fig, theme="streamlit", use_container_width=True)
+
 with tab3:
-    # DRY up df transforms
     with st.expander("Run Chart of Trips & Catches", expanded=True):
         df = get_run_chart_data()
         fig = go.Figure()

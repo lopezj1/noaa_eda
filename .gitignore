@@ -16,3 +16,4 @@ package.json
 *.user.yml*
 container-data
 certs
+/ml/catboost_info

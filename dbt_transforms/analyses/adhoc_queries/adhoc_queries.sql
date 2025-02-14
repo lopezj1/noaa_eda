@@ -91,7 +91,7 @@ limit 10
 select caught, us_region, try_cast(caught as int) / sum(try_cast(caught as int)) over (partition by us_region) as catch_rate from {{ ref('stg_noaa__trips') }}
 
 --
-select count(*) from analytics.trip_details
+select count(survey_id) from analytics.trip_details
 
 -- investigate rows with same survey_id
 select survey_id, count()

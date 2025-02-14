@@ -17,16 +17,19 @@ An end-to-end data product will be built consisting of extracting, loading, and 
    - `git clone https://github.com/lopezj1/noaa_eda.git`
 3. Switch to project directory
    - `cd noaa_eda`
-4. Run docker compose to spin up container
+4. Create nginx_proxy_manager_default network if it does not exist (*this network is needed in production)
+   - `docker network inspect nginx_proxy_manager_default >/dev/null 2>&1 || docker network create nginx_proxy_manager_default`
+5. Run docker compose to spin up container
    - `docker compose up -d`
-5. Visit prefect dashboard at http://localhost:4200
+6. Visit prefect dashboard at http://localhost:4200
    - *Wait 1-2 minutes for Prefect Agent to start and Deployments to be created.*
-6. Quick run ingest flow from Deployments
+7. Quick run ingest flow from Deployments
    - *Default year range is from 2018-2023 to have quicker loading time ~ 5 minutes.*
-7. Quick run dbt flow from Deployments
+8. Quick run dbt flow from Deployments
    - *Running all models will take about 5 minutes.*
-8.  Visit streamlit app at http://localhost:8501
-9.  Visit dbt docs at http://localhost:8080
+   - *If running Docker Enginer on WSL, you may need to allocate more memory in .wslconfig*
+9.  Visit streamlit app at http://localhost:8501
+10. Visit dbt docs at http://localhost:8080
 
 ## Project Steps
 ### Extract & Load (EL)
